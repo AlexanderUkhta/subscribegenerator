@@ -3,6 +3,7 @@ package a1s.portalsubscribegenerator.file;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -14,6 +15,15 @@ public class File {
     private XSSFWorkbook book = setBook();
     private XSSFSheet connectionSheet = setConnectionSheet();
     private XSSFSheet subscriptionSheet = setSubscriptionSheet();
+
+    public int setLastCell(XSSFSheet sheet) {
+        XSSFRow row = sheet.getRow(0);
+        return row.getLastCellNum();
+    }
+
+    public int setLastRow(XSSFSheet sheet) {
+        return sheet.getLastRowNum();
+    }
 
     private XSSFWorkbook setBook() {
         XSSFWorkbook workbook;
