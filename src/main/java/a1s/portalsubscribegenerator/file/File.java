@@ -27,7 +27,7 @@ public class File {
 
     private XSSFWorkbook setBook() {
         XSSFWorkbook workbook;
-        try{
+        try {
             workbook = new XSSFWorkbook(new FileInputStream(file));
         } catch (IOException e) {
             e.printStackTrace();
