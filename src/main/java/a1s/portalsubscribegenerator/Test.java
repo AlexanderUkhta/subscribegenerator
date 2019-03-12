@@ -1,6 +1,6 @@
 package a1s.portalsubscribegenerator;
 
-import a1s.portalsubscribegenerator.file.Read;
+import com.a1s.file.Read;
 
 public class Test {
     @org.junit.Test

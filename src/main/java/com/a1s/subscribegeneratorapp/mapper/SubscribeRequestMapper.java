@@ -2,11 +2,13 @@ package com.a1s.subscribegeneratorapp.mapper;
 
 import com.a1s.subscribegeneratorapp.model.SubscribeRequest;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
 
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+@Component("requestMapper")
 public class SubscribeRequestMapper implements RowMapper<SubscribeRequest> {
 
     public static final String BASE_SQL =

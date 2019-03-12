@@ -1,5 +1,6 @@
-package a1s.portalsubscribegenerator.file;
+package com.a1s.file;
 
+import com.a1s.file.File;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 
 public class Read {

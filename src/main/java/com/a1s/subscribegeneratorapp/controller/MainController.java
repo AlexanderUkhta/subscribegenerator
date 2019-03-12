@@ -1,33 +1,33 @@
 package com.a1s.subscribegeneratorapp.controller;
 
-import com.a1s.subscribegeneratorapp.ContextProcessorService;
+import com.a1s.subscribegeneratorapp.service.ContextProcessorService;
 import com.a1s.subscribegeneratorapp.dao.SubscribeRequestDao;
 import com.a1s.subscribegeneratorapp.model.SubscribeRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.Map;
 
 
-@RestController
+@Controller
 public class MainController {
 
     @Autowired
     private SubscribeRequestDao subscribeRequestDao;
+    @Autowired
+    private ContextProcessorService contextProcessorService;
 
-    @RequestMapping("/showRequests")
-    String showRequests() {
-        //Запуск отправки реквестов в очередь на SMSC
+    @RequestMapping(value = "/processData", method = RequestMethod.GET)
+    public String showRequests(ModelMap model) {
         Long timerStart = System.currentTimeMillis();
-        Map<Integer, SubscribeRequest> map = subscribeRequestDao.getAllAsTreeMap();
-        new ContextProcessorService(map).run();
-        int timerTotal = (int) (System.currentTimeMillis() - timerStart) / 1000;
+        Map<Integer, SubscribeRequest> readyForSmppProcessMap = subscribeRequestDao.findAll();
+        contextProcessorService.process(readyForSmppProcessMap);
 
-        //Черновой вывод ответа на GET-запрос
-        String response = "Map with requestContext created in" + timerTotal + "seconds";
-
-        return response;
+        model.addAttribute("message", "Got SMPP templates processing");
+        return "process";
     }
 }

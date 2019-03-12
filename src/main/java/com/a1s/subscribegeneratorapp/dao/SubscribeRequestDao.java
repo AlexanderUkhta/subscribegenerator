@@ -10,14 +10,17 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
-//@Transactional ??
 public class SubscribeRequestDao extends JdbcDaoSupport {
     private static final Log logger = LogFactory.getLog(SubscribeRequestDao.class);
+
+    @Autowired
+    private SubscribeRequestMapper requestMapper;
 
     @Autowired
     public SubscribeRequestDao(DataSource dataSource) {
@@ -25,20 +28,23 @@ public class SubscribeRequestDao extends JdbcDaoSupport {
     }
 
     @NotNull
-    public Map<Integer, SubscribeRequest> getAllAsTreeMap() {
+    public Map<Integer, SubscribeRequest> findAll() {
         String sql = SubscribeRequestMapper.BASE_SQL;
-        Map<Integer, SubscribeRequest> map = new TreeMap<>();
+        Map<Integer, SubscribeRequest> requestDataMap = new ConcurrentHashMap<>();
 
         Object[] params = new Object[] {};
-        SubscribeRequestMapper mapper = new SubscribeRequestMapper();
 
-        List<SubscribeRequest> list;
-        list = this.getJdbcTemplate().query(sql, params, mapper);
+        List<SubscribeRequest> list = new LinkedList<>();
+        try {
+            list = this.getJdbcTemplate().query(sql, params, requestMapper);
 
-        for (SubscribeRequest one : list) {
-            map.put(one.getId(), one);
+        } catch(NullPointerException e) {
+            logger.error("Empty result for query from database", e);
         }
 
-        return map;
+        for (SubscribeRequest one : list) {
+            requestDataMap.put(one.getId(), one);
+        }
+        return requestDataMap;
     }
 }

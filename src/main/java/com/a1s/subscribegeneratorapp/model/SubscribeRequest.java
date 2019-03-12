@@ -5,7 +5,7 @@ public class SubscribeRequest {
     private String shortNum, requestText, responseText;
 
     public SubscribeRequest(int id, String shortNum, String requestText, String responseText) {
-        super();    //todo зачем это здесь?
+        super();
         this.id = id;
         this.shortNum = shortNum;
         this.requestText = requestText;
@@ -16,33 +16,31 @@ public class SubscribeRequest {
         return id;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public void setShortNum(String shortNum) {
-        this.shortNum = shortNum;
-    }
-
     public String getShortNum() {
         return shortNum;
-    }
-
-    public void setRequestText(String requestText) {
-        this.requestText = requestText;
     }
 
     public String getRequestText() {
         return requestText;
     }
 
-    public void setResponseText(String responseText) {
-        this.responseText = responseText;
-    }
-
     public String getResponseText() {
         return responseText;
     }
 
+    public void setShortNum(String shortNum) {
+        this.shortNum = shortNum;
+    }
 
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public void setRequestText(String requestText) {
+        this.requestText = requestText;
+    }
+
+    public void setResponseText(String responseText) {
+        this.responseText = responseText;
+    }
 }
