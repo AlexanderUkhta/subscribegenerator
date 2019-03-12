@@ -15,9 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
-import static com.a1s.ConfigurationConstants.MSISDN_BUSY;
-import static com.a1s.ConfigurationConstants.MSISDN_NOT_BUSY;
-import static com.a1s.ConfigurationConstants.SYSTEM_ID;
+import static com.a1s.ConfigurationConstants.*;
 
 @Service
 public class RequestQueueService {
