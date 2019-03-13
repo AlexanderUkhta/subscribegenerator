@@ -1,6 +1,6 @@
 package com.a1s.subscribegeneratorapp.service;
 
-import com.a1s.smsc.CustomSmppServer;
+import com.a1s.subscribegeneratorapp.smsc.CustomSmppServer;
 import com.a1s.subscribegeneratorapp.dao.MsisdnDao;
 import com.cloudhopper.smpp.impl.DefaultSmppSession;
 import com.cloudhopper.smpp.pdu.DeliverSm;
@@ -13,9 +13,8 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Supplier;
 
-import static com.a1s.ConfigurationConstants.*;
+import static com.a1s.ConfigurationConstantsAndMethods.*;
 
 @Service
 public class RequestQueueService {
@@ -28,21 +27,24 @@ public class RequestQueueService {
     private DefaultSmppSession smppSession;
 
 
-    public void putDeliverSmToQueue(DeliverSm deliverSm) {
-        DeliverSm outgoingDeliverSm = deliverSm;
+    void putDeliverSmToQueue(DeliverSm deliverSm) {
 
         try {
-            ultimateWhile(this::hasNextFreeMsisdn, 30);
+            ultimateWhile(this::hasNoFreeMsisdn, 60);
         } catch (TimeoutException e) {
             logger.error("All msisdns are busy for too long, next request will be processed", e);
         }
 
         String currentFreeMsisdn = getNextFreeMsisdn();
-        outgoingDeliverSm.setSourceAddress(new Address((byte) 1, (byte) 1, currentFreeMsisdn));
+        deliverSm.setSourceAddress(new Address((byte) 1, (byte) 1, currentFreeMsisdn));
 
         try {
-            smppSession.sendRequestPdu(outgoingDeliverSm, TimeUnit.SECONDS.toMillis(60), false);
+
+            smppSession.sendRequestPdu(deliverSm, TimeUnit.SECONDS.toMillis(60), false);
+            logger.info("*** " + counterOfSentMessages.incrementAndGet() +
+                    "th DeliverSm is sent on " + currentFreeMsisdn + " ***");
             msisdnProcessMap.put(currentFreeMsisdn, MSISDN_BUSY);
+
         } catch (RecoverablePduException e1) {
             logger.error("Got recoverable pdu exception while sending pdu", e1);
             msisdnProcessMap.put(currentFreeMsisdn, MSISDN_NOT_BUSY);
@@ -59,39 +61,28 @@ public class RequestQueueService {
             logger.error("Got interrupted exception", e5);
             msisdnProcessMap.put(currentFreeMsisdn, MSISDN_NOT_BUSY);
         }
-
     }
 
     private String getNextFreeMsisdn() {
 
-        String currentFreeMsisndn = msisdnProcessMap.entrySet().stream()
+        return msisdnProcessMap.entrySet().stream()
                 .filter(entry -> ((int) entry.getValue() == MSISDN_NOT_BUSY))
                 .map(Map.Entry::getKey)
                 .findFirst()
                 .orElse(null);
 
-        return currentFreeMsisndn;
     }
 
-    private Boolean hasNextFreeMsisdn() {
-        return msisdnProcessMap.values().stream().anyMatch(value -> ((int) value == MSISDN_NOT_BUSY));
+    private Boolean hasNoFreeMsisdn() {
+        return msisdnProcessMap.values().stream().noneMatch(value -> ((int) value == MSISDN_NOT_BUSY));
     }
 
-    public void setSmppSession(String systemId) {
+    void setSmppSession(final String systemId) {
         smppSession = (DefaultSmppSession) CustomSmppServer.getServerSession(systemId);
     }
 
-    private void ultimateWhile(Supplier<Boolean> condition, Integer timeoutSeconds) throws TimeoutException {
-        Long start = System.currentTimeMillis();
-        Long end = 0L;
-
-        while (condition.get() && ((end - start) / 1000) < timeoutSeconds) {
-            end = System.currentTimeMillis();
-        }
-
-        if  (((end - start) / 1000) >= timeoutSeconds) {
-            throw new TimeoutException();
-        }
+    public void makeMsisdnNotBusy(final String msisdnNowNotBusy) { //Используем в UdhConcatenationTask, или в OnPduReceived, если нет UDH
+        msisdnProcessMap.put(msisdnNowNotBusy, MSISDN_NOT_BUSY);
     }
 
 

@@ -21,6 +21,9 @@ public class ContextProcessorService {
     }
 
     public void process(final Map<Integer, SubscribeRequest> requests) {
+
+        logger.info("Got context map full, going to start SMSC...");
+
         CountDownLatch bindCompleted = new CountDownLatch(1);
         smscProcessorService.startSmsc(bindCompleted);
         try {
@@ -29,7 +32,7 @@ public class ContextProcessorService {
             logger.error("Smpp server did not start at 10 seconds", e);
         }
 
-
+        logger.info("Start making requests from RequestData");
         requests.forEach((id, requestInfo) ->
                 smscProcessorService.makeRequestFromDataAndSend(requestInfo));
     }

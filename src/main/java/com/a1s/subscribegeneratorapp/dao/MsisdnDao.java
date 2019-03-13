@@ -14,11 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.a1s.ConfigurationConstants.MSISDN_NOT_BUSY;
+import static com.a1s.ConfigurationConstantsAndMethods.MSISDN_NOT_BUSY;
 
 @Repository
 public class MsisdnDao extends JdbcDaoSupport {
-
     private static final Log logger = LogFactory.getLog(MsisdnDao.class);
 
     @Autowired
@@ -35,11 +34,10 @@ public class MsisdnDao extends JdbcDaoSupport {
         Map<String, Integer> msisdnMap = new ConcurrentHashMap<>();
 
         Object[] params = new Object[] {};
-
         List<String> list = new LinkedList<>();
+
         try {
             list = this.getJdbcTemplate().query(sql, params, msisdnMapper);
-
         } catch(NullPointerException e) {
             logger.error("Empty result for query from database", e);
         }

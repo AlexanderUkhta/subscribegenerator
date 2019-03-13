@@ -1,4 +1,4 @@
-package com.a1s.smsc;
+package com.a1s.subscribegeneratorapp.smsc;
 import com.cloudhopper.smpp.PduAsyncResponse;
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.SmppServerSession;
@@ -19,12 +19,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.cloudhopper.commons.gsm.GsmUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class CustomSmppSessionHandler extends DefaultSmppSessionHandler {
     private final Logger logger;
 
+    @Autowired
+    ConcatenationService concatenationService;
+
     private WeakReference<SmppSession> sessionRef;
     private ScheduledExecutorService pool;
+
     private long sessionId;
 
     private AtomicInteger responseCounter = new AtomicInteger(0);
@@ -42,10 +49,6 @@ public class CustomSmppSessionHandler extends DefaultSmppSessionHandler {
 
     public CustomSmppSessionHandler(Logger logger) {
         this.logger = logger;
-    }
-
-    public Long getSessionId() {
-        return sessionId;
     }
 
     public void setSessionId(Long sessionId) {

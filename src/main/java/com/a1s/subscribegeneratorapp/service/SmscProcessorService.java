@@ -1,7 +1,7 @@
 package com.a1s.subscribegeneratorapp.service;
 
-import static com.a1s.ConfigurationConstants.*;
-import com.a1s.smsc.CustomSmppServer;
+import static com.a1s.ConfigurationConstantsAndMethods.*;
+import com.a1s.subscribegeneratorapp.smsc.CustomSmppServer;
 import com.a1s.subscribegeneratorapp.model.SubscribeRequest;
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.pdu.DeliverSm;
@@ -28,12 +28,12 @@ public class SmscProcessorService {
             CustomSmppServer.getBaseServerConfiguration(SMPP_SERVER_PORT, SYSTEM_ID), new NioEventLoopGroup(),
             new NioEventLoopGroup());
 
-    public void startSmsc(CountDownLatch bindCompleted) {
+    void startSmsc(CountDownLatch bindCompleted) {
         customSmppServer.startServerMain(bindCompleted);
         requestQueueService.setSmppSession(SYSTEM_ID);
     }
 
-    public void makeRequestFromDataAndSend(final SubscribeRequest dataForRequest) {
+    void makeRequestFromDataAndSend(final SubscribeRequest dataForRequest) {
         Address destinationAddress = new Address((byte) 1, (byte) 1, dataForRequest.getShortNum());
 
         try {
@@ -47,7 +47,7 @@ public class SmscProcessorService {
         sendRequest(currentReadyDeliverSm);
     }
 
-    public void sendRequest(final DeliverSm outgoingDeliverSm) {
+    private void sendRequest(final DeliverSm outgoingDeliverSm) {
         requestQueueService.putDeliverSmToQueue(outgoingDeliverSm);
     }
 }

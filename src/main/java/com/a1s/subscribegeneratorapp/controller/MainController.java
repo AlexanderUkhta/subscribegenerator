@@ -23,11 +23,13 @@ public class MainController {
 
     @RequestMapping(value = "/processData", method = RequestMethod.GET)
     public String showRequests(ModelMap model) {
-        Long timerStart = System.currentTimeMillis();
+
         Map<Integer, SubscribeRequest> readyForSmppProcessMap = subscribeRequestDao.findAll();
+
         contextProcessorService.process(readyForSmppProcessMap);
 
         model.addAttribute("message", "Got SMPP templates processing");
         return "process";
+
     }
 }
