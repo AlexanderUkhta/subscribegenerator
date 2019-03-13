@@ -11,20 +11,34 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 public class File {
-    private static final String file = "src/main/resources/Пример настроек рассылок.xlsx";
+    private static final String file = "src/main/resources/file.xlsx";
     private XSSFWorkbook book = setBook();
     private XSSFSheet connectionSheet = setConnectionSheet();
     private XSSFSheet subscriptionSheet = setSubscriptionSheet();
 
+    /**
+     * Получаем последнюю id последней ячейки для переданной страницы
+     * @param sheet
+     * @return
+     */
     public int setLastCell(XSSFSheet sheet) {
         XSSFRow row = sheet.getRow(0);
         return row.getLastCellNum();
     }
 
+    /**
+     * Получаем последнюю id последней строки для переданной страницы
+     * @param sheet
+     * @return
+     */
     public int setLastRow(XSSFSheet sheet) {
         return sheet.getLastRowNum();
     }
 
+    /**
+     * Получаем excel-книгу
+     * @return
+     */
     private XSSFWorkbook setBook() {
         XSSFWorkbook workbook;
         try {
@@ -36,28 +50,43 @@ public class File {
         return workbook;
     }
 
+    /**
+     * Получаем страницу с названием Подключение
+     * @return
+     */
     private XSSFSheet setConnectionSheet() {
         XSSFSheet sheet;
         try{
             sheet = book.getSheet("Подключение");
         } catch (Exception e){
             e.printStackTrace();
-            throw new RuntimeException("Can't get info sheet");
+            throw new RuntimeException("Can't get connection sheet");
         }
         return sheet;
     }
 
+    /**
+     * Получаем страницу с названием Рассылки
+     * @return
+     */
     private XSSFSheet setSubscriptionSheet() {
         XSSFSheet sheet;
         try{
-            sheet = book.getSheet("Подключение");
+            sheet = book.getSheet("Рассылки");
         } catch (Exception e){
             e.printStackTrace();
-            throw new RuntimeException("Can't get info sheet");
+            throw new RuntimeException("Can't get subscription sheet");
         }
         return sheet;
     }
 
+    /**
+     * Получаем ячейку
+     * @param r
+     * @param c
+     * @param sheet
+     * @return
+     */
     private Cell getCell(int r, int c, XSSFSheet sheet) {
         Row row = sheet.getRow(r);
         if (row == null) {
@@ -71,6 +100,13 @@ public class File {
         return cell;
     }
 
+    /**
+     * Получаем значение ячейки
+     * @param r
+     * @param c
+     * @param sheet
+     * @return
+     */
     public String getValue(int r, int c, XSSFSheet sheet) {
         Cell cell = getCell(r, c, sheet);
         if(cell == null) {

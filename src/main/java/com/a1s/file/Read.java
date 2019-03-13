@@ -1,6 +1,5 @@
 package com.a1s.file;
 
-import com.a1s.file.File;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 
 public class Read {
@@ -29,6 +28,9 @@ public class Read {
         getColumnsId();
     }
 
+    /**
+     * Получение id столбцов с необходимыми данными для теста
+     */
     private void getColumnsId() {
         int row = 0;
         for(int i = 0; i < lastConnectionColumn; i++) {
@@ -41,7 +43,7 @@ public class Read {
                 textRequestColumn = i;
             }
         }
-        for (int i = 0; i < lastSubscriptionRow;i++) {
+        for (int i = 0; i < lastSubscriptionColumn; i++) {
             String text = file.getValue(row, i, subscriptionSheet);
             if(text.equals("Уведомление при подключении")) {
                 welcomeNotificationColumn = i;
@@ -51,9 +53,9 @@ public class Read {
     }
 
     public void sout() {
-        System.out.println(psIdColumn);
-        System.out.println(shortNumColumn);
-        System.out.println(textRequestColumn);
-        System.out.println(welcomeNotificationColumn);
+        System.out.println("psIdColumn: " + psIdColumn);
+        System.out.println("shortNumColumn: " + shortNumColumn);
+        System.out.println("textRequestColumn: " + textRequestColumn);
+        System.out.println("welcomeNotificationColumn: " + welcomeNotificationColumn);
     }
 }
