@@ -1,11 +1,17 @@
 package com.a1s.file;
 
+import com.a1s.subscribegeneratorapp.dao.SubscribeRequestDao;
 import com.a1s.subscribegeneratorapp.model.SubscribeRequest;
+import com.a1s.subscribegeneratorapp.model.Subscription;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Read {
+    private static final Log logger = LogFactory.getLog(Read.class);
     private int psIdColumn;
     private int shortNumColumn;
     private int textRequestColumn;
@@ -55,9 +61,25 @@ public class Read {
         }
     }
 
-    private List<SubscribeRequest> read() {
+    private List<Subscription> read() {
+        List<Subscription> subs = new ArrayList<>();
         for(int i = 1; i < lastConnectionRow; i++) {
+            int psid = Integer.parseInt(file.getValue(i, psIdColumn, connectionSheet));
+            String shortNum = file.getValue(i, shortNumColumn, connectionSheet);
+            String textRequest = file.getValue(i, textRequestColumn, connectionSheet);
+            String welcomeNotification = file.getValue(i, welcomeNotificationColumn, subscriptionSheet);
+            if (psid == 0) {
+                logger.warn("Empty ps id in row " + i + 1);
+            } else {
+                subs.add(new Subscription(psid, shortNum, textRequest, welcomeNotification));
+            }
+        }
+        return subs;
+    }
 
+    public void sout() {
+        for(Subscription sub : read()) {
+            System.out.println(sub.getPsid() + " " + sub.getShortNum() + " " + sub.getTextRequest() + " " + sub.getWelcomeNotification());
         }
     }
 }
