@@ -6,6 +6,6 @@ public class FileTest {
     @org.junit.Test
     public void test() {
         Read read = new Read();
-        read.sout();
+
     }
 }

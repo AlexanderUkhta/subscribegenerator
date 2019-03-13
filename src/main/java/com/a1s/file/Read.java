@@ -1,6 +1,9 @@
 package com.a1s.file;
 
+import com.a1s.subscribegeneratorapp.model.SubscribeRequest;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
+
+import java.util.List;
 
 public class Read {
     private int psIdColumn;
@@ -52,10 +55,9 @@ public class Read {
         }
     }
 
-    public void sout() {
-        System.out.println("psIdColumn: " + psIdColumn);
-        System.out.println("shortNumColumn: " + shortNumColumn);
-        System.out.println("textRequestColumn: " + textRequestColumn);
-        System.out.println("welcomeNotificationColumn: " + welcomeNotificationColumn);
+    private List<SubscribeRequest> read() {
+        for(int i = 1; i < lastConnectionRow; i++) {
+
+        }
     }
 }
