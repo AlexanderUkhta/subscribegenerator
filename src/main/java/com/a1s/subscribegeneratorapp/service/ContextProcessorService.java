@@ -29,7 +29,7 @@ public class ContextProcessorService {
         try {
             bindCompleted.await(15, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            logger.error("Smpp server did not start at 10 seconds", e);
+            logger.error("Smpp server did not start at 15 seconds", e);
         }
 
         logger.info("Start making requests from RequestData");

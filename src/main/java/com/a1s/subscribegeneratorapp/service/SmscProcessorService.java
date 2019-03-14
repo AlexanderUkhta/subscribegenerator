@@ -44,10 +44,10 @@ public class SmscProcessorService {
             logger.error("Smth wrong while setting short message for deliver_sm", e);
         }
 
-        sendRequest(currentReadyDeliverSm);
+        sendRequest(currentReadyDeliverSm, dataForRequest.getId());
     }
 
-    private void sendRequest(final DeliverSm outgoingDeliverSm) {
-        requestQueueService.putDeliverSmToQueue(outgoingDeliverSm);
+    private void sendRequest(final DeliverSm outgoingDeliverSm, final int transactionId) {
+        requestQueueService.putDeliverSmToQueue(outgoingDeliverSm, transactionId);
     }
 }

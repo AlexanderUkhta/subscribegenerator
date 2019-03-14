@@ -1,5 +1,6 @@
 package com.a1s.subscribegeneratorapp.service;
 
+import com.a1s.subscribegeneratorapp.model.MsisdnState;
 import com.a1s.subscribegeneratorapp.smsc.CustomSmppServer;
 import com.a1s.subscribegeneratorapp.dao.MsisdnDao;
 import com.cloudhopper.smpp.impl.DefaultSmppSession;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -23,11 +25,11 @@ public class RequestQueueService {
     @Autowired
     private MsisdnDao msisdnDao;
 
-    private Map<String, Integer> msisdnProcessMap = msisdnDao.findAll();
+    private Map<String, MsisdnState> msisdnProcessMap = new ConcurrentHashMap<>(); //todo: msisdnDao.findAll(); по возможности
     private DefaultSmppSession smppSession;
 
 
-    void putDeliverSmToQueue(DeliverSm deliverSm) {
+    void putDeliverSmToQueue(DeliverSm deliverSm, final int transactionId) {
 
         try {
             ultimateWhile(this::hasNoFreeMsisdn, 60);
@@ -43,30 +45,30 @@ public class RequestQueueService {
             smppSession.sendRequestPdu(deliverSm, TimeUnit.SECONDS.toMillis(60), false);
             logger.info("*** " + counterOfSentMessages.incrementAndGet() +
                     "th DeliverSm is sent on " + currentFreeMsisdn + " ***");
-            msisdnProcessMap.put(currentFreeMsisdn, MSISDN_BUSY);
+            msisdnProcessMap.put(currentFreeMsisdn, new MsisdnState(transactionId, 1000, MSISDN_BUSY));
 
         } catch (RecoverablePduException e1) {
             logger.error("Got recoverable pdu exception while sending pdu", e1);
-            msisdnProcessMap.put(currentFreeMsisdn, MSISDN_NOT_BUSY);
+            msisdnProcessMap.put(currentFreeMsisdn, new MsisdnState(-1, 1000, MSISDN_NOT_BUSY));
         } catch (UnrecoverablePduException e2) {
             logger.error("Got unrecoverable pdu exception while sending pdu", e2);
-            msisdnProcessMap.put(currentFreeMsisdn, MSISDN_NOT_BUSY);
+            msisdnProcessMap.put(currentFreeMsisdn, new MsisdnState(-1, 1000, MSISDN_NOT_BUSY));
         } catch (SmppTimeoutException e3) {
             logger.error("Got smpp timeout exception", e3);
-            msisdnProcessMap.put(currentFreeMsisdn, MSISDN_NOT_BUSY);
+            msisdnProcessMap.put(currentFreeMsisdn, new MsisdnState(-1, 1000, MSISDN_NOT_BUSY));
         } catch (SmppChannelException e4) {
             logger.error("Got smpp channel exception", e4);
-            msisdnProcessMap.put(currentFreeMsisdn, MSISDN_NOT_BUSY);
+            msisdnProcessMap.put(currentFreeMsisdn, new MsisdnState(-1, 1000, MSISDN_NOT_BUSY));
         } catch (InterruptedException e5) {
             logger.error("Got interrupted exception", e5);
-            msisdnProcessMap.put(currentFreeMsisdn, MSISDN_NOT_BUSY);
+            msisdnProcessMap.put(currentFreeMsisdn, new MsisdnState(-1, 1000, MSISDN_NOT_BUSY));
         }
     }
 
     private String getNextFreeMsisdn() {
 
         return msisdnProcessMap.entrySet().stream()
-                .filter(entry -> ((int) entry.getValue() == MSISDN_NOT_BUSY))
+                .filter(entry -> ((int) entry.getValue().getBusyState() == MSISDN_NOT_BUSY))
                 .map(Map.Entry::getKey)
                 .findFirst()
                 .orElse(null);
@@ -74,15 +76,17 @@ public class RequestQueueService {
     }
 
     private Boolean hasNoFreeMsisdn() {
-        return msisdnProcessMap.values().stream().noneMatch(value -> ((int) value == MSISDN_NOT_BUSY));
+        return msisdnProcessMap.values().stream().noneMatch(value -> (value.getBusyState() == MSISDN_NOT_BUSY));
     }
 
     void setSmppSession(final String systemId) {
         smppSession = (DefaultSmppSession) CustomSmppServer.getServerSession(systemId);
     }
 
-    public void makeMsisdnNotBusy(final String msisdnNowNotBusy) { //Используем в UdhConcatenationTask, или в OnPduReceived, если нет UDH
-        msisdnProcessMap.put(msisdnNowNotBusy, MSISDN_NOT_BUSY);
+    public void makeMsisdnNotBusyAndMakeReport(final String msisdn, final byte[] shortMessage) {
+        msisdnProcessMap.put(msisdn, new MsisdnState(-1, 1000, MSISDN_NOT_BUSY));
+        //todo: после этого процессинг транзакции по ID внутри msisdn_state и сравнение short_message c ожидаемым
+        //мб создать мапу с данными файла, которые уже в обработке, так не будет двойного обращения к requests map
     }
 
 
