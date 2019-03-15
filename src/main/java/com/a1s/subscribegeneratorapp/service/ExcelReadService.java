@@ -60,10 +60,4 @@ public class ExcelReadService {
         }
         return row;
     }
-
-    public void sout() {
-        for(Map.Entry e : findAll().entrySet()) {
-            System.out.println(e.getValue());
-        }
-    }
 }
