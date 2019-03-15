@@ -84,11 +84,14 @@ public class ConcatenationService {
     public void processPayloadConcatMessage(final SubmitSm submitSm) {
         Tlv messagePayload = submitSm.getOptionalParameter(SmppConstants.TAG_MESSAGE_PAYLOAD);
         byte[] shortMessage = messagePayload.getValue();
+
+        requestQueueService.makeMsisdnNotBusyAndMakeReport(submitSm.getDestAddress().getAddress(), shortMessage);
     }
 
     public void processSimpleMessage(final SubmitSm submitSm) {
         byte[] shortMessage = submitSm.getShortMessage();
 
+        requestQueueService.makeMsisdnNotBusyAndMakeReport(submitSm.getDestAddress().getAddress(), shortMessage);
     }
 
     /* combines parts of UDH/SAR-concatenated request */
