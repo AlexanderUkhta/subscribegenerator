@@ -4,6 +4,7 @@ import com.a1s.subscribegeneratorapp.model.SubscribeRequest;
 import com.a1s.subscribegeneratorapp.model.Subscription;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +21,7 @@ public class ExcelReadService {
 
     @Autowired
     private File file;
-
-    public ExcelReadService() {
+    {
         getColumnsId();
     }
 
@@ -30,7 +30,9 @@ public class ExcelReadService {
      */
     private void getColumnsId() {
         int row = 0;
-        for(int i = 0; i < file.getLastCellId(file.getSheet("Подключение")); i++) {
+        XSSFSheet sheet = file.getSheet("Подключение");
+        int lastCell = file.getLastCellId(sheet);
+        for(int i = 0; i < lastCell; i++) {
             String text = file.getCellValue(row, i, file.getSheet("Подключение"));
             if(text.equals("ps id")) {
                 psIdColumn = i;
@@ -49,7 +51,6 @@ public class ExcelReadService {
         }
     }
 
-    //todo: тут получаем ConcurrentHashMap<Id, SubscribeRequest(id, psId, psIdName, shortNum, request, response)>
     public Map<Integer, SubscribeRequest> findAll() {
         Map<Integer, SubscribeRequest> treeMap = new TreeMap<>();
         for(int i = 1; i < file.getLastRowId(file.getSheet("Подключение")); i++) {

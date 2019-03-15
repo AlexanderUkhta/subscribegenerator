@@ -8,10 +8,12 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.stereotype.Component;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 
+@Component
 public class File {
     private static final Log logger = LogFactory.getLog(File.class);
     private static final String file = "src/main/resources/file.xlsx";
