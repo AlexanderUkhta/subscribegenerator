@@ -23,10 +23,14 @@ public class SmscProcessorService {
     @Autowired
     private RequestQueueService requestQueueService;
 
-    private DeliverSm currentReadyDeliverSm = new DeliverSm();
-    private CustomSmppServer customSmppServer = new CustomSmppServer(
-            CustomSmppServer.getBaseServerConfiguration(SMPP_SERVER_PORT, SYSTEM_ID), new NioEventLoopGroup(),
-            new NioEventLoopGroup());
+    private DeliverSm currentReadyDeliverSm;
+    private CustomSmppServer customSmppServer;
+    {
+        currentReadyDeliverSm = new DeliverSm();
+        customSmppServer = new CustomSmppServer(
+                CustomSmppServer.getBaseServerConfiguration(SMPP_SERVER_PORT, SYSTEM_ID), new NioEventLoopGroup(),
+                new NioEventLoopGroup());
+    }
 
     void startSmsc(CountDownLatch bindCompleted) {
         customSmppServer.startServerMain(bindCompleted);
