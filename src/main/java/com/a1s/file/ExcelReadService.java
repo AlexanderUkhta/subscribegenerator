@@ -16,6 +16,10 @@ public class ExcelReadService {
     @Autowired
     private File file = new File();
 
+    /**
+     * Fills map with objects consisting of id (row number), ps id, short number, request text, response text (welcome notification).
+     * @return
+     */
     public Map<Integer, SubscribeRequest> findAll() {
         Map<Integer, SubscribeRequest> treeMap = new TreeMap<>();
         for(int i = 1; i < file.getLastRowId(file.getSheet("Подключение")); i++) {
@@ -38,6 +42,11 @@ public class ExcelReadService {
         return treeMap;
     }
 
+    /**
+     * Get row number from subscription page
+     * @param psId
+     * @return
+     */
     private int findRow(int psId) {
         int row = 0;
         for (int i = 1; i < file.getLastRowId(file.getSheet("Рассылки")); i++) {

@@ -8,6 +8,7 @@ public class SubscribeRequest {
                             String shortNum, String requestText, String responseText) {
         this.id = id;
         this.psId = psId;
+        this.psIdName = psIdName;
         this.shortNum = shortNum;
         this.requestText = requestText;
         this.responseText = responseText;
