@@ -2,7 +2,6 @@ package com.a1s.subscribegeneratorapp.service;
 
 import com.a1s.subscribegeneratorapp.model.MsisdnState;
 import com.a1s.subscribegeneratorapp.smsc.CustomSmppServer;
-import com.a1s.subscribegeneratorapp.dao.MsisdnDao;
 import com.cloudhopper.smpp.impl.DefaultSmppSession;
 import com.cloudhopper.smpp.pdu.DeliverSm;
 import com.cloudhopper.smpp.type.*;
@@ -23,7 +22,7 @@ public class RequestQueueService {
     private static final Log logger = LogFactory.getLog(RequestQueueService.class);
 
     @Autowired
-    TransactionReportService transactionReportService;
+    private TransactionReportService transactionReportService;
 
     private Map<String, MsisdnState> msisdnProcessMap = new ConcurrentHashMap<>(); //todo: msisdnDao.findAll(); по возможности
     private DefaultSmppSession smppSession;
@@ -87,12 +86,10 @@ public class RequestQueueService {
         smppSession = (DefaultSmppSession) CustomSmppServer.getServerSession(systemId);
     }
 
-    public void makeTransactionReport(final String msisdn, final byte[] shortMessage) {
-
+    void makeTransactionReport(final String msisdn, final byte[] shortMessage) {
         transactionReportService.processReportInfo(shortMessage, getTransactionIdByMsisdn(msisdn));
         msisdnProcessMap.put(msisdn, new MsisdnState(-1, 1000, MSISDN_NOT_BUSY));
-        //todo: после этого процессинг транзакции по ID внутри msisdn_state и сравнение short_message c ожидаемым
-        //мб создать мапу с данными файла, которые уже в обработке, так не будет двойного обращения к requests map
+
     }
 
 

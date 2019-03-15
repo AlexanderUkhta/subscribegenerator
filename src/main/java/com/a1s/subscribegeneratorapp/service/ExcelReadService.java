@@ -1,5 +1,6 @@
 package com.a1s.file;
 
+import com.a1s.subscribegeneratorapp.file.File;
 import com.a1s.subscribegeneratorapp.model.SubscribeRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
