@@ -18,10 +18,12 @@ public class SubscribeRequestMapper implements RowMapper<SubscribeRequest> {
     @Override
     public SubscribeRequest mapRow(ResultSet rs, int rowNum) throws SQLException {
         int id = rs.getInt("id");
+        int psid = rs.getInt("psid");
         String shortNum = rs.getString("short_number");
         String requestText = rs.getString("request");
         String responseText = rs.getString("response");
+        String psIdName = rs.getString("psIdName");
 
-        return new SubscribeRequest(id, shortNum, requestText, responseText);
+        return new SubscribeRequest(id, psid, psIdName, shortNum, requestText, responseText);
     }
 }

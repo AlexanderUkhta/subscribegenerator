@@ -1,5 +1,6 @@
 package com.a1s.file;
 
+import com.a1s.subscribegeneratorapp.model.SubscribeRequest;
 import com.a1s.subscribegeneratorapp.model.Subscription;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,8 +50,8 @@ public class ExcelReadService {
     }
 
     //todo: тут получаем ConcurrentHashMap<Id, SubscribeRequest(id, psId, psIdName, shortNum, request, response)>
-    public TreeMap<Integer, Subscription> read() {
-        TreeMap<Integer, Subscription> treeMap = new TreeMap<>();
+    public Map<Integer, SubscribeRequest> findAll() {
+        Map<Integer, SubscribeRequest> treeMap = new TreeMap<>();
         for(int i = 1; i < file.getLastRowId(file.getSheet("Подключение")); i++) {
             int psid = Integer.parseInt(file.getCellValue(i, psIdColumn, file.getSheet("Подключение")));
             String shortNum = file.getCellValue(i, shortNumColumn, file.getSheet("Подключение"));
@@ -59,14 +60,14 @@ public class ExcelReadService {
             if (psid == 0) {
                 logger.warn("Empty ps id in row " + i + 1);
             } else {
-                treeMap.put(i, new Subscription(psid, shortNum, textRequest, welcomeNotification));
+                treeMap.put(i, new SubscribeRequest(i, psid, String.valueOf(psid), shortNum, textRequest, welcomeNotification));
             }
         }
         return treeMap;
     }
 
     public void sout() {
-        for(Map.Entry e : read().entrySet()) {
+        for(Map.Entry e : findAll().entrySet()) {
             System.out.println(e.getValue());
         }
     }
