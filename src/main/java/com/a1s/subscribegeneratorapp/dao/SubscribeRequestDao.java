@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Deprecated
 @Repository
 public class SubscribeRequestDao extends JdbcDaoSupport {
     private static final Log logger = LogFactory.getLog(SubscribeRequestDao.class);

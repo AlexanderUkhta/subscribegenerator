@@ -12,6 +12,10 @@ public class SubscribeRequest {
         this.responseText = responseText;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getId() {
         return id;
     }

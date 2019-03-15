@@ -1,0 +1,11 @@
+com.a1s
+com.a1s.file
+com.a1s.subscribegeneratorapp
+com.a1s.subscribegeneratorapp.config
+com.a1s.subscribegeneratorapp.controller
+com.a1s.subscribegeneratorapp.dao
+com.a1s.subscribegeneratorapp.mapper
+com.a1s.subscribegeneratorapp.model
+com.a1s.subscribegeneratorapp.service
+com.a1s.subscribegeneratorapp.smsc
+filetest

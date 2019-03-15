@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
 
+@Deprecated
 @Configuration
 public class MultipleDataSourceConfiguration {
 

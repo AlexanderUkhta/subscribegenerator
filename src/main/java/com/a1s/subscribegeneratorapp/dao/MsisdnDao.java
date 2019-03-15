@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static com.a1s.ConfigurationConstantsAndMethods.MSISDN_NOT_BUSY;
 
+@Deprecated
 @Repository
 public class MsisdnDao extends JdbcDaoSupport {
     private static final Log logger = LogFactory.getLog(MsisdnDao.class);

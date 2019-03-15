@@ -1,11 +1,11 @@
 package filetest;
 
-import com.a1s.file.Read;
+import com.a1s.file.ExcelReadService;
 
 public class FileTest {
     @org.junit.Test
     public void test() {
-        Read read = new Read();
+        ExcelReadService read = new ExcelReadService();
         read.sout();
     }
 }

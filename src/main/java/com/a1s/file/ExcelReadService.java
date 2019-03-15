@@ -1,17 +1,18 @@
 package com.a1s.file;
 
-import com.a1s.subscribegeneratorapp.dao.SubscribeRequestDao;
-import com.a1s.subscribegeneratorapp.model.SubscribeRequest;
 import com.a1s.subscribegeneratorapp.model.Subscription;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Read {
-    private static final Log logger = LogFactory.getLog(Read.class);
+@Service
+public class ExcelReadService {
+    private static final Log logger = LogFactory.getLog(ExcelReadService.class);
     private int psIdColumn;
     private int shortNumColumn;
     private int textRequestColumn;
@@ -19,21 +20,24 @@ public class Read {
 
     private XSSFSheet connectionSheet;
     private XSSFSheet subscriptionSheet;
-    private int lastSubscriptionColumn;
+
+    private int lastSubscriptionColumn; //все эти 4 поля можно забрать через инъекцию File
     private int lastConnectionColumn;
     private int lastSubscriptionRow;
     private int lastConnectionRow;
 
+    @Autowired
     private File file;
 
-    public Read() {
+    public ExcelReadService() {
+        //todo: убрать все, кроме строки 41, в методы инъектировать file.get() методы
         file = new File();
         connectionSheet = file.getConnectionSheet();
         subscriptionSheet = file.getSubscriptionSheet();
-        lastConnectionColumn = file.setLastCell(connectionSheet);
-        lastSubscriptionColumn = file.setLastCell(subscriptionSheet);
-        lastSubscriptionRow = file.setLastRow(subscriptionSheet);
-        lastConnectionRow = file.setLastRow(connectionSheet);
+        lastConnectionColumn = file.getLastCellId(connectionSheet);
+        lastSubscriptionColumn = file.getLastCellId(subscriptionSheet);
+        lastSubscriptionRow = file.getLastRowId(subscriptionSheet);
+        lastConnectionRow = file.getLastRowId(connectionSheet);
         getColumnsId();
     }
 
@@ -61,6 +65,7 @@ public class Read {
         }
     }
 
+    //todo: тут получаем ConcurrentHashMap<Id, SubscribeRequest(id, psId, psIdName, shortNum, request, response)>
     private List<Subscription> read() {
         List<Subscription> subs = new ArrayList<>();
         for(int i = 1; i < lastConnectionRow; i++) {

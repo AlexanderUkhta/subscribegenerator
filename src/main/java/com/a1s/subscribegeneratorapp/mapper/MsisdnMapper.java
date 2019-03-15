@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+@Deprecated
 @Component("msisdnMapper")
 public class MsisdnMapper implements RowMapper<String> {
 

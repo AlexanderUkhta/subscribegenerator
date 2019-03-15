@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+@Deprecated
 @Component("requestMapper")
 public class SubscribeRequestMapper implements RowMapper<SubscribeRequest> {
 

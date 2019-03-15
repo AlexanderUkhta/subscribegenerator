@@ -11,17 +11,23 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 public class File {
+    //todo: Logger +
     private static final String file = "src/main/resources/file.xlsx";
-    private XSSFWorkbook book = setBook();
-    private XSSFSheet connectionSheet = setConnectionSheet();
-    private XSSFSheet subscriptionSheet = setSubscriptionSheet();
+    private XSSFWorkbook book;
+    private XSSFSheet connectionSheet;
+    private XSSFSheet subscriptionSheet;
+    {
+        book = setBook();
+        connectionSheet = setConnectionSheet();
+        subscriptionSheet = setSubscriptionSheet();
+    }
 
     /**
      * Получаем последнюю id последней ячейки для переданной страницы
      * @param sheet
      * @return
      */
-    public int setLastCell(XSSFSheet sheet) {
+    public int getLastCellId(XSSFSheet sheet) {
         XSSFRow row = sheet.getRow(0);
         return row.getLastCellNum();
     }
@@ -31,7 +37,7 @@ public class File {
      * @param sheet
      * @return
      */
-    public int setLastRow(XSSFSheet sheet) {
+    public int getLastRowId(XSSFSheet sheet) {
         return sheet.getLastRowNum();
     }
 
@@ -44,6 +50,7 @@ public class File {
         try {
             workbook = new XSSFWorkbook(new FileInputStream(file));
         } catch (IOException e) {
+            //todo logger
             e.printStackTrace();
             throw new RuntimeException("Can't get book");
         }
@@ -54,11 +61,12 @@ public class File {
      * Получаем страницу с названием Подключение
      * @return
      */
-    private XSSFSheet setConnectionSheet() {
+    private XSSFSheet setConnectionSheet() { //todo: копипаст нижнего
         XSSFSheet sheet;
         try{
             sheet = book.getSheet("Подключение");
         } catch (Exception e){
+            //todo logger
             e.printStackTrace();
             throw new RuntimeException("Can't get connection sheet");
         }
@@ -69,7 +77,7 @@ public class File {
      * Получаем страницу с названием Рассылки
      * @return
      */
-    private XSSFSheet setSubscriptionSheet() {
+    private XSSFSheet setSubscriptionSheet() { //todo: копипаст верхнего
         XSSFSheet sheet;
         try{
             sheet = book.getSheet("Рассылки");
@@ -107,7 +115,7 @@ public class File {
      * @param sheet
      * @return
      */
-    public String getValue(int r, int c, XSSFSheet sheet) {
+    public String getValue(int r, int c, XSSFSheet sheet) { //getCellValue
         Cell cell = getCell(r, c, sheet);
         if(cell == null) {
             cell = sheet.getRow(r).createCell(c);
