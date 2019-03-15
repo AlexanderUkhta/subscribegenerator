@@ -43,7 +43,7 @@ public class ConcatenationService {
             byte[] finalMessage = concatenateUdhOrSar(messageParts.get(messageFullId));
             messageParts.asMap().remove(messageFullId); //todo: and add finalMessage[] to report
 
-            requestQueueService.makeMsisdnNotBusyAndMakeReport(msisdn, finalMessage);
+            requestQueueService.makeTransactionReport(msisdn, finalMessage);
         }
 
     }
@@ -76,7 +76,7 @@ public class ConcatenationService {
             byte[] finalMessage = concatenateUdhOrSar(messageParts.get(messageFullId));
             messageParts.asMap().remove(messageFullId);
 
-            requestQueueService.makeMsisdnNotBusyAndMakeReport(msisdn, finalMessage); //todo: and add finalMessage[] to report
+            requestQueueService.makeTransactionReport(msisdn, finalMessage); //todo: and add finalMessage[] to report
         }
 
     }
@@ -85,13 +85,13 @@ public class ConcatenationService {
         Tlv messagePayload = submitSm.getOptionalParameter(SmppConstants.TAG_MESSAGE_PAYLOAD);
         byte[] shortMessage = messagePayload.getValue();
 
-        requestQueueService.makeMsisdnNotBusyAndMakeReport(submitSm.getDestAddress().getAddress(), shortMessage);
+        requestQueueService.makeTransactionReport(submitSm.getDestAddress().getAddress(), shortMessage);
     }
 
     public void processSimpleMessage(final SubmitSm submitSm) {
         byte[] shortMessage = submitSm.getShortMessage();
 
-        requestQueueService.makeMsisdnNotBusyAndMakeReport(submitSm.getDestAddress().getAddress(), shortMessage);
+        requestQueueService.makeTransactionReport(submitSm.getDestAddress().getAddress(), shortMessage);
     }
 
     /* combines parts of UDH/SAR-concatenated request */

@@ -13,15 +13,13 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class ContextProcessorService {
     private static final Log logger = LogFactory.getLog(ContextProcessorService.class);
-    private SmscProcessorService smscProcessorService;
+
+    private Map<Integer, SubscribeRequest> requests;
 
     @Autowired
-    public void setSmscProcessorService(SmscProcessorService smscProcessorService) {
-        this.smscProcessorService = smscProcessorService;
-    }
+    private SmscProcessorService smscProcessorService;
 
-    public void process(final Map<Integer, SubscribeRequest> requests) {
-
+    public void process() {
         logger.info("Got context map full, going to start SMSC...");
 
         CountDownLatch bindCompleted = new CountDownLatch(1);
@@ -35,6 +33,14 @@ public class ContextProcessorService {
         logger.info("Start making requests from RequestData");
         requests.forEach((id, requestInfo) ->
                 smscProcessorService.makeRequestFromDataAndSend(requestInfo));
+    }
+
+    public void setSubscribeRequestMap(final Map<Integer, SubscribeRequest> requests) {
+        this.requests = requests;
+    }
+
+    public SubscribeRequest findRequestDataById(final int transactionId) {
+        return requests.get(transactionId);
     }
 }
 

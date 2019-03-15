@@ -23,7 +23,7 @@ public class RequestQueueService {
     private static final Log logger = LogFactory.getLog(RequestQueueService.class);
 
     @Autowired
-    private MsisdnDao msisdnDao;
+    TransactionReportService transactionReportService;
 
     private Map<String, MsisdnState> msisdnProcessMap = new ConcurrentHashMap<>(); //todo: msisdnDao.findAll(); по возможности
     private DefaultSmppSession smppSession;
@@ -68,7 +68,7 @@ public class RequestQueueService {
     private String getNextFreeMsisdn() {
 
         return msisdnProcessMap.entrySet().stream()
-                .filter(entry -> ((int) entry.getValue().getBusyState() == MSISDN_NOT_BUSY))
+                .filter(entry -> (entry.getValue().getBusyState() == MSISDN_NOT_BUSY))
                 .map(Map.Entry::getKey)
                 .findFirst()
                 .orElse(null);
@@ -79,11 +79,17 @@ public class RequestQueueService {
         return msisdnProcessMap.values().stream().noneMatch(value -> (value.getBusyState() == MSISDN_NOT_BUSY));
     }
 
+    private int getTransactionIdByMsisdn(final String msisdn) {
+        return msisdnProcessMap.get(msisdn).getCurrentTransactionId();
+    }
+
     void setSmppSession(final String systemId) {
         smppSession = (DefaultSmppSession) CustomSmppServer.getServerSession(systemId);
     }
 
-    public void makeMsisdnNotBusyAndMakeReport(final String msisdn, final byte[] shortMessage) {
+    public void makeTransactionReport(final String msisdn, final byte[] shortMessage) {
+
+        transactionReportService.processReportInfo(shortMessage, getTransactionIdByMsisdn(msisdn));
         msisdnProcessMap.put(msisdn, new MsisdnState(-1, 1000, MSISDN_NOT_BUSY));
         //todo: после этого процессинг транзакции по ID внутри msisdn_state и сравнение short_message c ожидаемым
         //мб создать мапу с данными файла, которые уже в обработке, так не будет двойного обращения к requests map
