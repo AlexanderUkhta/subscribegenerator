@@ -13,13 +13,9 @@ import java.util.TreeMap;
 @Service
 public class ExcelReadService {
     private static final Log logger = LogFactory.getLog(ExcelReadService.class);
-    private int psIdColumn;
-    private int shortNumColumn;
-    private int textRequestColumn;
-    private int welcomeNotificationColumn;
 
     @Autowired
-    private File file;
+    private File file = new File();
 
     public ExcelReadService() {
         //getColumnsId();
@@ -49,21 +45,39 @@ public class ExcelReadService {
         }
     }
 
-    //todo: тут получаем ConcurrentHashMap<Id, SubscribeRequest(id, psId, psIdName, shortNum, request, response)>
     public Map<Integer, SubscribeRequest> findAll() {
         Map<Integer, SubscribeRequest> treeMap = new TreeMap<>();
         for(int i = 1; i < file.getLastRowId(file.getSheet("Подключение")); i++) {
-            int psid = Integer.parseInt(file.getCellValue(i, psIdColumn, file.getSheet("Подключение")));
-            String shortNum = file.getCellValue(i, shortNumColumn, file.getSheet("Подключение"));
-            String textRequest = file.getCellValue(i, textRequestColumn, file.getSheet("Подключение"));
-            String welcomeNotification = file.getCellValue(i, welcomeNotificationColumn, file.getSheet("Рассылки"));
+            int psid = Integer.parseInt(file.getCellValue(i, file.getCellId("ps id", file.getSheet("Подключение")),
+                    file.getSheet("Подключение")));
             if (psid == 0) {
                 logger.warn("Empty ps id in row " + i + 1);
             } else {
-                treeMap.put(i, new SubscribeRequest(i, psid, String.valueOf(psid), shortNum, textRequest, welcomeNotification));
+                String shortNum = file.getCellValue(i, file.getCellId("Короткий номер", file.getSheet("Подключение")),
+                        file.getSheet("Подключение"));
+                String textRequest = file.getCellValue(i, file.getCellId("Текст сообщения", file.getSheet("Подключение")),
+                        file.getSheet("Подключение"));
+                String welcomeNotification = file.getCellValue(findRow(psid), file.getCellId("Уведомление при подключении", file.getSheet("Рассылки")),
+                        file.getSheet("Рассылки"));
+                String subscriptionName = file.getCellValue(findRow(psid), file.getCellId("Название рассылки", file.getSheet("Рассылки")),
+                        file.getSheet("Рассылки"));
+                treeMap.put(i, new SubscribeRequest(i, psid, subscriptionName, shortNum, textRequest, welcomeNotification));
             }
         }
         return treeMap;
+    }
+
+    private int findRow(int psId) {
+        int row = 0;
+        for (int i = 1; i < file.getLastRowId(file.getSheet("Рассылки")); i++) {
+            int id = Integer.valueOf(file.getCellValue(i, file.getCellId("ps id", file.getSheet("Рассылки")),
+                    file.getSheet("Рассылки")));
+            if(psId == id) {
+                row = i;
+                break;
+            }
+        }
+        return row;
     }
 
     public void sout() {

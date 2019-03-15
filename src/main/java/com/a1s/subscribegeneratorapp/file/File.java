@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+
 
 @Component("file")
 public class File {
@@ -98,15 +100,32 @@ public class File {
     public String getCellValue(int r, int c, XSSFSheet sheet) {
         Cell cell = getCell(r, c, sheet);
         cell.removeCellComment();
-        String res;
+        String res = "0";
         if(cell.getCellTypeEnum() == CellType.STRING){
             res = cell.getStringCellValue().trim();
         } else if(cell.getCellTypeEnum() == CellType.NUMERIC) {
             int n = (int) cell.getNumericCellValue();
             res = String.valueOf(n);
-        } else {
-            res = "0";
+        } else if(cell.getCellTypeEnum() == CellType.FORMULA) {
+            res = cell.getRichStringCellValue().getString();
         }
         return res;
+    }
+
+    /**
+     * Get cell id
+     * @param cellValue text in cell
+     * @param sheet
+     * @return
+     */
+    public int getCellId(String cellValue, XSSFSheet sheet) {
+        int id = 0;
+        for (int i = 0; i < getLastCellId(sheet); i++) {
+            if(cellValue.equals(getCellValue(0, i, sheet))) {
+                id = i;
+                break;
+            }
+        }
+        return id;
     }
 }
