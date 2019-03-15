@@ -18,14 +18,10 @@ public class ExcelReadService {
     private int textRequestColumn;
     private int welcomeNotificationColumn;
 
-    private XSSFSheet connectionSheet;
-    private XSSFSheet subscriptionSheet;
-
     @Autowired
     private File file;
 
     public ExcelReadService() {
-        //todo: убрать все, кроме строки 41, в методы инъектировать file.get() методы
         getColumnsId();
     }
     //Подключение Рассылки
@@ -35,8 +31,8 @@ public class ExcelReadService {
      */
     private void getColumnsId() {
         int row = 0;
-        for(int i = 0; i < file.getLastCellId(file.getConnectionSheet()); i++) {
-            String text = file.getCellValue(row, i, connectionSheet);
+        for(int i = 0; i < file.getLastCellId(file.getSheet("Подключение")); i++) {
+            String text = file.getCellValue(row, i, file.getSheet("Подключение"));
             if(text.equals("ps id")) {
                 psIdColumn = i;
             } else if(text.equals("Короткий номер")) {
@@ -45,8 +41,8 @@ public class ExcelReadService {
                 textRequestColumn = i;
             }
         }
-        for (int i = 0; i < lastSubscriptionColumn; i++) {
-            String text = file.getCellValue(row, i, subscriptionSheet);
+        for (int i = 0; i < file.getLastCellId(file.getSheet("Рассылки")); i++) {
+            String text = file.getCellValue(row, i, file.getSheet("Рассылки"));
             if(text.equals("Уведомление при подключении")) {
                 welcomeNotificationColumn = i;
                 break;
@@ -57,11 +53,11 @@ public class ExcelReadService {
     //todo: тут получаем ConcurrentHashMap<Id, SubscribeRequest(id, psId, psIdName, shortNum, request, response)>
     private List<Subscription> read() {
         List<Subscription> subs = new ArrayList<>();
-        for(int i = 1; i < lastConnectionRow; i++) {
-            int psid = Integer.parseInt(file.getCellValue(i, psIdColumn, connectionSheet));
-            String shortNum = file.getCellValue(i, shortNumColumn, connectionSheet);
-            String textRequest = file.getCellValue(i, textRequestColumn, connectionSheet);
-            String welcomeNotification = file.getCellValue(i, welcomeNotificationColumn, subscriptionSheet);
+        for(int i = 1; i < file.getLastRowId(file.getSheet("Подключение")); i++) {
+            int psid = Integer.parseInt(file.getCellValue(i, psIdColumn, file.getSheet("Подключение")));
+            String shortNum = file.getCellValue(i, shortNumColumn, file.getSheet("Подключение"));
+            String textRequest = file.getCellValue(i, textRequestColumn, file.getSheet("Подключение"));
+            String welcomeNotification = file.getCellValue(i, welcomeNotificationColumn, file.getSheet("Рассылки"));
             if (psid == 0) {
                 logger.warn("Empty ps id in row " + i + 1);
             } else {
