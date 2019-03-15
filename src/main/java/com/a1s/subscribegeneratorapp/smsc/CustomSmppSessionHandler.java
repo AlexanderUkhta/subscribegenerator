@@ -14,15 +14,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-@Service
 public class CustomSmppSessionHandler extends DefaultSmppSessionHandler {
-    private final Logger logger;
+    private final Logger logger = LoggerFactory.getLogger(CustomSmppSessionHandler.class);
 
-    @Autowired
-    private ConcatenationService concatenationService;
+    private ConcatenationService concatenationService = new ConcatenationService();
 
     private WeakReference<SmppSession> sessionRef;
     private ScheduledExecutorService pool;
@@ -34,13 +29,8 @@ public class CustomSmppSessionHandler extends DefaultSmppSessionHandler {
     private static AtomicInteger deliverSmRespCounter = new AtomicInteger(0);
 
     CustomSmppSessionHandler(SmppServerSession session, ScheduledExecutorService pool) {
-        this(LoggerFactory.getLogger(CustomSmppSessionHandler.class));
         this.sessionRef = new WeakReference<>(session);
         this.pool = pool;
-    }
-
-    private CustomSmppSessionHandler(Logger logger) {
-        this.logger = logger;
     }
 
     public void setSessionId(Long sessionId) {

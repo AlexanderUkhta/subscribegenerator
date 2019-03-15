@@ -20,7 +20,7 @@ public class MultipleDataSourceConfiguration {
     }
 
     @Bean
-    @ConfigurationProperties(prefix = "spring.msisdnDatasource")
+    @ConfigurationProperties(prefix = "spring.msisdndatasource")
     public DataSource secondaryDataSource() {
         return DataSourceBuilder.create().build();
     }
