@@ -1,5 +1,7 @@
 package com.a1s.file;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
@@ -11,20 +13,16 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 public class File {
-    //todo: Logger +
+    private static final Log logger = LogFactory.getLog(File.class);
     private static final String file = "src/main/resources/file.xlsx";
     private XSSFWorkbook book;
-    private XSSFSheet connectionSheet;
-    private XSSFSheet subscriptionSheet;
     {
-        book = setBook();
-        connectionSheet = setConnectionSheet();
-        subscriptionSheet = setSubscriptionSheet();
+        book = getBook();
     }
 
     /**
-     * Получаем последнюю id последней ячейки для переданной страницы
-     * @param sheet
+     * Get the number of the last cell in the first row of the sheet
+     * @param sheet excel sheet
      * @return
      */
     public int getLastCellId(XSSFSheet sheet) {
@@ -33,8 +31,8 @@ public class File {
     }
 
     /**
-     * Получаем последнюю id последней строки для переданной страницы
-     * @param sheet
+     * Get the last row id on the page
+     * @param sheet  excel sheet
      * @return
      */
     public int getLastRowId(XSSFSheet sheet) {
@@ -42,57 +40,40 @@ public class File {
     }
 
     /**
-     * Получаем excel-книгу
+     * Get excel book
      * @return
      */
-    private XSSFWorkbook setBook() {
+    private XSSFWorkbook getBook() {
         XSSFWorkbook workbook;
         try {
             workbook = new XSSFWorkbook(new FileInputStream(file));
         } catch (IOException e) {
-            //todo logger
-            e.printStackTrace();
+            logger.error("Can't get book", e);
             throw new RuntimeException("Can't get book");
         }
         return workbook;
     }
 
     /**
-     * Получаем страницу с названием Подключение
+     * Get a page with a specific title from the book
      * @return
      */
-    private XSSFSheet setConnectionSheet() { //todo: копипаст нижнего
+    public XSSFSheet getSheet(String sheetName) {
         XSSFSheet sheet;
         try{
             sheet = book.getSheet("Подключение");
         } catch (Exception e){
-            //todo logger
-            e.printStackTrace();
+            logger.error("Can't get connection sheet", e);
             throw new RuntimeException("Can't get connection sheet");
         }
         return sheet;
     }
 
     /**
-     * Получаем страницу с названием Рассылки
-     * @return
-     */
-    private XSSFSheet setSubscriptionSheet() { //todo: копипаст верхнего
-        XSSFSheet sheet;
-        try{
-            sheet = book.getSheet("Рассылки");
-        } catch (Exception e){
-            e.printStackTrace();
-            throw new RuntimeException("Can't get subscription sheet");
-        }
-        return sheet;
-    }
-
-    /**
-     * Получаем ячейку
-     * @param r
-     * @param c
-     * @param sheet
+     * Get cell by coordinates
+     * @param r row id
+     * @param c cell id
+     * @param sheet apache sheet
      * @return
      */
     private Cell getCell(int r, int c, XSSFSheet sheet) {
@@ -109,17 +90,14 @@ public class File {
     }
 
     /**
-     * Получаем значение ячейки
+     * Get cell value
      * @param r
      * @param c
      * @param sheet
      * @return
      */
-    public String getValue(int r, int c, XSSFSheet sheet) { //getCellValue
+    public String getCellValue(int r, int c, XSSFSheet sheet) {
         Cell cell = getCell(r, c, sheet);
-        if(cell == null) {
-            cell = sheet.getRow(r).createCell(c);
-        }
         cell.removeCellComment();
         String res;
         if(cell.getCellTypeEnum() == CellType.STRING){
@@ -131,13 +109,5 @@ public class File {
             res = "0";
         }
         return res;
-    }
-
-    public XSSFSheet getConnectionSheet() {
-        return connectionSheet;
-    }
-
-    public XSSFSheet getSubscriptionSheet() {
-        return subscriptionSheet;
     }
 }
