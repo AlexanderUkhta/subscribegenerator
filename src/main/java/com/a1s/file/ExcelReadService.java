@@ -3,12 +3,11 @@ package com.a1s.file;
 import com.a1s.subscribegeneratorapp.model.Subscription;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 @Service
 public class ExcelReadService {
@@ -24,7 +23,6 @@ public class ExcelReadService {
     public ExcelReadService() {
         getColumnsId();
     }
-    //Подключение Рассылки
 
     /**
      * Получение id столбцов с необходимыми данными для теста
@@ -51,8 +49,8 @@ public class ExcelReadService {
     }
 
     //todo: тут получаем ConcurrentHashMap<Id, SubscribeRequest(id, psId, psIdName, shortNum, request, response)>
-    private List<Subscription> read() {
-        List<Subscription> subs = new ArrayList<>();
+    public TreeMap<Integer, Subscription> read() {
+        TreeMap<Integer, Subscription> treeMap = new TreeMap<>();
         for(int i = 1; i < file.getLastRowId(file.getSheet("Подключение")); i++) {
             int psid = Integer.parseInt(file.getCellValue(i, psIdColumn, file.getSheet("Подключение")));
             String shortNum = file.getCellValue(i, shortNumColumn, file.getSheet("Подключение"));
@@ -61,15 +59,15 @@ public class ExcelReadService {
             if (psid == 0) {
                 logger.warn("Empty ps id in row " + i + 1);
             } else {
-                subs.add(new Subscription(psid, shortNum, textRequest, welcomeNotification));
+                treeMap.put(i, new Subscription(psid, shortNum, textRequest, welcomeNotification));
             }
         }
-        return subs;
+        return treeMap;
     }
 
     public void sout() {
-        for(Subscription sub : read()) {
-            System.out.println(sub.getPsid() + " " + sub.getShortNum() + " " + sub.getTextRequest() + " " + sub.getWelcomeNotification());
+        for(Map.Entry e : read().entrySet()) {
+            System.out.println(e.getValue());
         }
     }
 }

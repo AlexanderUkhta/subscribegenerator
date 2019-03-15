@@ -16,7 +16,8 @@ public class File {
     private static final Log logger = LogFactory.getLog(File.class);
     private static final String file = "src/main/resources/file.xlsx";
     private XSSFWorkbook book;
-    {
+
+    public File() {
         book = getBook();
     }
 
@@ -61,7 +62,7 @@ public class File {
     public XSSFSheet getSheet(String sheetName) {
         XSSFSheet sheet;
         try{
-            sheet = book.getSheet("Подключение");
+            sheet = book.getSheet(sheetName);
         } catch (Exception e){
             logger.error("Can't get connection sheet", e);
             throw new RuntimeException("Can't get connection sheet");
