@@ -1,6 +1,5 @@
 package com.a1s.subscribegeneratorapp.mapper;
 
-import com.a1s.subscribegeneratorapp.model.SubscribeRequest;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 

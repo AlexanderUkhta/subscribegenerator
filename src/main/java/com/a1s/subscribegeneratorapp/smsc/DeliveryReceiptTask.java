@@ -1,4 +1,4 @@
-package com.a1s.smsc;
+package com.a1s.subscribegeneratorapp.smsc;
 
 import com.cloudhopper.commons.charset.CharsetUtil;
 import com.cloudhopper.smpp.SmppConstants;

@@ -1,4 +1,4 @@
-package com.a1s.smsc;
+package com.a1s.subscribegeneratorapp.smsc;
 
 import com.cloudhopper.smpp.*;
 import com.cloudhopper.smpp.impl.DefaultSmppServer;
@@ -144,8 +144,8 @@ public class CustomSmppServer extends DefaultSmppServer{
 
         public CustomSmppServerHandler(ScheduledExecutorService pool) {
             this.pool = pool;
-
         }
+
         @Override
         public void sessionBindRequested(Long sessionId, SmppSessionConfiguration sessionConfiguration, final BaseBind bindRequest) throws SmppProcessingException {
             // test name change of sessions
