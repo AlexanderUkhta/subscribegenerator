@@ -1,4 +1,4 @@
-package com.a1s.file;
+package com.a1s.subscribegeneratorapp.service;
 
 import com.a1s.subscribegeneratorapp.file.File;
 import com.a1s.subscribegeneratorapp.model.SubscribeRequest;
