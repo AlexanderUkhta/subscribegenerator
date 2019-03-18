@@ -1,7 +1,7 @@
 package com.a1s.subscribegeneratorapp.service;
 
 import com.a1s.subscribegeneratorapp.file.File;
-import com.a1s.subscribegeneratorapp.model.SubscribeRequest;
+import com.a1s.subscribegeneratorapp.model.SubscribeRequestData;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,14 +15,14 @@ public class ExcelReadService {
     private static final Log logger = LogFactory.getLog(ExcelReadService.class);
 
     @Autowired
-    private File file = new File();
+    private File file;
 
     /**
      * Fills map with objects consisting of id (row number), ps id, short number, request text, response text (welcome notification).
      * @return
      */
-    public Map<Integer, SubscribeRequest> findAll() {
-        Map<Integer, SubscribeRequest> treeMap = new TreeMap<>();
+    public Map<Integer, SubscribeRequestData> findAll() {
+        Map<Integer, SubscribeRequestData> treeMap = new TreeMap<>();
         for(int i = 1; i < file.getLastRowId(file.getSheet("Подключение")); i++) {
             int psid = Integer.parseInt(file.getCellValue(i, file.getCellId("ps id", file.getSheet("Подключение")),
                     file.getSheet("Подключение")));
@@ -37,7 +37,7 @@ public class ExcelReadService {
                         file.getSheet("Рассылки"));
                 String subscriptionName = file.getCellValue(findRow(psid), file.getCellId("Название рассылки", file.getSheet("Рассылки")),
                         file.getSheet("Рассылки"));
-                treeMap.put(i, new SubscribeRequest(i, psid, subscriptionName, shortNum, textRequest, welcomeNotification));
+                treeMap.put(i, new SubscribeRequestData(i, psid, subscriptionName, shortNum, textRequest, welcomeNotification));
             }
         }
         return treeMap;
@@ -48,7 +48,7 @@ public class ExcelReadService {
      * @param psId
      * @return
      */
-    private int findRow(int psId) {
+    private int findRow(final int psId) {
         int row = 0;
         for (int i = 1; i < file.getLastRowId(file.getSheet("Рассылки")); i++) {
             int id = Integer.valueOf(file.getCellValue(i, file.getCellId("ps id", file.getSheet("Рассылки")),

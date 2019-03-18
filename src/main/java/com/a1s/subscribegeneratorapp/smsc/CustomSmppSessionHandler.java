@@ -1,4 +1,5 @@
 package com.a1s.subscribegeneratorapp.smsc;
+import com.a1s.subscribegeneratorapp.config.ApplicationContextHolder;
 import com.a1s.subscribegeneratorapp.service.ConcatenationService;
 import com.cloudhopper.smpp.PduAsyncResponse;
 import com.cloudhopper.smpp.SmppConstants;
@@ -9,6 +10,7 @@ import com.cloudhopper.smpp.pdu.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -17,7 +19,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class CustomSmppSessionHandler extends DefaultSmppSessionHandler {
     private final Logger logger = LoggerFactory.getLogger(CustomSmppSessionHandler.class);
 
-    private ConcatenationService concatenationService = new ConcatenationService();
+    private ConcatenationService concatenationService =
+            (ConcatenationService) ApplicationContextHolder.getApplicationContext().getBean("concatenationService");
 
     private WeakReference<SmppSession> sessionRef;
     private ScheduledExecutorService pool;
@@ -33,7 +36,7 @@ public class CustomSmppSessionHandler extends DefaultSmppSessionHandler {
         this.pool = pool;
     }
 
-    public void setSessionId(Long sessionId) {
+    void setSessionId(Long sessionId) {
         this.sessionId = sessionId;
     }
 
@@ -84,11 +87,15 @@ public class CustomSmppSessionHandler extends DefaultSmppSessionHandler {
 
             SubmitSmResp resp = (SubmitSmResp) pduRequest.createResponse();
             long id = responseCounter.incrementAndGet();
-
-            resp.setMessageId(String.valueOf(id) + session.getConfiguration().getName() + ":" + sessionId);
+            try {
+                resp.setMessageId(String.valueOf(id) + session.getConfiguration().getName() + ":" + sessionId);
+            } catch (NullPointerException e) {
+                logger.error("Current session appears like NULL while .getConfiguration", e);
+            }
 
             if (((SubmitSm) pduRequest).getRegisteredDelivery() > 0) {
-                pool.schedule(new DeliveryReceiptTask(session, (SubmitSm) pduRequest, resp.getMessageId(), "000"), 1, TimeUnit.SECONDS);
+                pool.schedule(new DeliveryReceiptTask(
+                        session, (SubmitSm) pduRequest, resp.getMessageId(), "000"), 1, TimeUnit.SECONDS);
             }
 
             return resp;

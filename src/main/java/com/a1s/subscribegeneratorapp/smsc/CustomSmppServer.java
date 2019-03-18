@@ -4,14 +4,10 @@ import com.cloudhopper.smpp.*;
 import com.cloudhopper.smpp.impl.DefaultSmppServer;
 import com.cloudhopper.smpp.pdu.*;
 import com.cloudhopper.smpp.type.SmppChannelException;
-import com.cloudhopper.smpp.type.SmppProcessingException;
-
 import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import io.netty.channel.EventLoopGroup;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +18,6 @@ public class CustomSmppServer extends DefaultSmppServer{
     private static ConcurrentHashMap<Integer, CustomSmppServerHandler> serverHandlers = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<Integer, SubmitSm> receivedSubmitSmMessages = new ConcurrentHashMap<>();
     static ConcurrentHashMap<Integer, DeliverSmResp> receivedDeliverSmResps = new ConcurrentHashMap<>();
-    static ConcurrentHashMap<Integer, byte[]> receivedMultipartSubmitSmMessages = new ConcurrentHashMap<>();
     public static Queue<SubmitSm> requestsDeniedByError = new ConcurrentLinkedQueue<>();
 
     private static CountDownLatch bindCompleted;
@@ -89,65 +84,18 @@ public class CustomSmppServer extends DefaultSmppServer{
         return smppServerHandler;
     }
 
-    public static SubmitSm getSubmitSm(Integer key) {
-        return receivedSubmitSmMessages.get(key);
-    }
-
-    public static Integer getSubmitSmMapSize() {
-        return receivedSubmitSmMessages.size();
-    }
-
-    public static DeliverSmResp getDeliverSmResp(Integer key) {
-        return receivedDeliverSmResps.get(key);
-    }
-
-    public static int getDeliverSmRespMapSize() {
-        return receivedDeliverSmResps.size();
-    }
-
-    public static byte[] getMultipartSubmitSm(Integer key) {
-        return receivedMultipartSubmitSmMessages.get(key);
-    }
-
-    public static boolean noSubmitSmReceived() {
-        return receivedSubmitSmMessages.isEmpty();
-    }
-
-    public static boolean noDeliverSmRespReceived() {
-        return receivedDeliverSmResps.isEmpty();
-    }
-
-    public static boolean noMultipartSubmitSmReceived() {
-        return receivedMultipartSubmitSmMessages.isEmpty();
-    }
-
-    public static void clearSubmitSmMap() {
-        receivedSubmitSmMessages.clear();
-    }
-
-    public static void clearDeliverSmRespMap() {
-        receivedDeliverSmResps.clear();
-    }
-
-    public static void clearMultipartSubmitSmMap() { receivedMultipartSubmitSmMessages.clear();}
-
-    public static void clearDeniedByErrorRequestsList() {
-        requestsDeniedByError.clear();
-    }
-
-
     public static class CustomSmppServerHandler implements SmppServerHandler {
 
-        protected ScheduledExecutorService pool;
+        ScheduledExecutorService pool;
 
-        protected ConcurrentHashMap<Long, SmppSessionHandler> sessionHandlers = new ConcurrentHashMap<>();
+        ConcurrentHashMap<Long, SmppSessionHandler> sessionHandlers = new ConcurrentHashMap<>();
 
-        public CustomSmppServerHandler(ScheduledExecutorService pool) {
+        CustomSmppServerHandler(ScheduledExecutorService pool) {
             this.pool = pool;
         }
 
         @Override
-        public void sessionBindRequested(Long sessionId, SmppSessionConfiguration sessionConfiguration, final BaseBind bindRequest) throws SmppProcessingException {
+        public void sessionBindRequested(Long sessionId, SmppSessionConfiguration sessionConfiguration, final BaseBind bindRequest) {
             // test name change of sessions
             // this name actually shows up as thread context...
             sessionConfiguration.setName("Application.SMPP." + sessionConfiguration.getSystemId());
@@ -155,7 +103,7 @@ public class CustomSmppServer extends DefaultSmppServer{
         }
 
         @Override
-        public void sessionCreated(Long sessionId, SmppServerSession session, BaseBindResp preparedBindResponse) throws SmppProcessingException {
+        public void sessionCreated(Long sessionId, SmppServerSession session, BaseBindResp preparedBindResponse) {
             logger.info("Session created: {}", session);
 
             CustomSmppSessionHandler sessionHandler = new CustomSmppSessionHandler(session, pool);

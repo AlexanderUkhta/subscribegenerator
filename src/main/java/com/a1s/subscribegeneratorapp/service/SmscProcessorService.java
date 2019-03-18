@@ -2,7 +2,7 @@ package com.a1s.subscribegeneratorapp.service;
 
 import static com.a1s.ConfigurationConstantsAndMethods.*;
 import com.a1s.subscribegeneratorapp.smsc.CustomSmppServer;
-import com.a1s.subscribegeneratorapp.model.SubscribeRequest;
+import com.a1s.subscribegeneratorapp.model.SubscribeRequestData;
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.pdu.DeliverSm;
 import com.cloudhopper.smpp.type.Address;
@@ -22,6 +22,8 @@ public class SmscProcessorService {
 
     @Autowired
     private RequestQueueService requestQueueService;
+    @Autowired
+    private TransactionReportService transactionReportService;
 
     private DeliverSm currentReadyDeliverSm;
     private CustomSmppServer customSmppServer;
@@ -37,7 +39,7 @@ public class SmscProcessorService {
         requestQueueService.setSmppSession(SYSTEM_ID);
     }
 
-    void makeRequestFromDataAndSend(final SubscribeRequest dataForRequest) {
+    void makeRequestFromDataAndSend(final SubscribeRequestData dataForRequest) {
         Address destinationAddress = new Address((byte) 1, (byte) 1, dataForRequest.getShortNum());
 
         try {
@@ -46,6 +48,8 @@ public class SmscProcessorService {
             currentReadyDeliverSm.setDataCoding(SmppConstants.DATA_CODING_UCS2);
         } catch (SmppInvalidArgumentException e) {
             logger.error("Smth wrong while setting short message for deliver_sm", e);
+            transactionReportService.processOneFailureReport(dataForRequest.getId(), GOT_SMPP_INVALID_ARG_EXCEPTION);
+            //how to continue with another request?
         }
 
         sendRequest(currentReadyDeliverSm, dataForRequest.getId());

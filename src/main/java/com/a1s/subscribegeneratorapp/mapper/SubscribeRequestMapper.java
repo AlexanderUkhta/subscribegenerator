@@ -1,6 +1,6 @@
 package com.a1s.subscribegeneratorapp.mapper;
 
-import com.a1s.subscribegeneratorapp.model.SubscribeRequest;
+import com.a1s.subscribegeneratorapp.model.SubscribeRequestData;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
@@ -10,13 +10,13 @@ import java.sql.SQLException;
 
 @Deprecated
 @Component("requestMapper")
-public class SubscribeRequestMapper implements RowMapper<SubscribeRequest> {
+public class SubscribeRequestMapper implements RowMapper<SubscribeRequestData> {
 
     public static final String BASE_SQL =
             "select * from short_message_templates";
 
     @Override
-    public SubscribeRequest mapRow(ResultSet rs, int rowNum) throws SQLException {
+    public SubscribeRequestData mapRow(ResultSet rs, int rowNum) throws SQLException {
         int id = rs.getInt("id");
         int psid = rs.getInt("psid");
         String shortNum = rs.getString("short_number");
@@ -24,6 +24,6 @@ public class SubscribeRequestMapper implements RowMapper<SubscribeRequest> {
         String responseText = rs.getString("response");
         String psIdName = rs.getString("psIdName");
 
-        return new SubscribeRequest(id, psid, psIdName, shortNum, requestText, responseText);
+        return new SubscribeRequestData(id, psid, psIdName, shortNum, requestText, responseText);
     }
 }

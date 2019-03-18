@@ -1,6 +1,7 @@
 package com.a1s.subscribegeneratorapp.service;
 
-import com.a1s.subscribegeneratorapp.model.MsisdnState;
+import com.a1s.subscribegeneratorapp.config.ReadMsisdnProperties;
+import com.a1s.subscribegeneratorapp.model.MsisdnStateData;
 import com.a1s.subscribegeneratorapp.smsc.CustomSmppServer;
 import com.cloudhopper.smpp.impl.DefaultSmppSession;
 import com.cloudhopper.smpp.pdu.DeliverSm;
@@ -10,6 +11,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -23,8 +25,10 @@ public class RequestQueueService {
 
     @Autowired
     private TransactionReportService transactionReportService;
+    @Autowired
+    private ReadMsisdnProperties readMsisdnProperties;
 
-    private Map<String, MsisdnState> msisdnProcessMap = new ConcurrentHashMap<>(); //todo: msisdnDao.findAll(); по возможности
+    private Map<String, MsisdnStateData> msisdnProcessMap = new ConcurrentHashMap<>();
     private DefaultSmppSession smppSession;
 
 
@@ -33,34 +37,42 @@ public class RequestQueueService {
         try {
             ultimateWhile(this::hasNoFreeMsisdn, 60);
         } catch (TimeoutException e) {
-            logger.error("All msisdns are busy for too long, next request will be processed", e);
+            logger.error("All msisdns are busy for too long, got current request failed. The next request " +
+                    "will be processed", e);
+            transactionReportService.processOneFailureReport(transactionId, ALL_MSISDN_BUSY_FOR_TOO_LONG);
+            //how to continue with another request?
         }
 
         String currentFreeMsisdn = getNextFreeMsisdn();
         deliverSm.setSourceAddress(new Address((byte) 1, (byte) 1, currentFreeMsisdn));
 
         try {
-
             smppSession.sendRequestPdu(deliverSm, TimeUnit.SECONDS.toMillis(60), false);
             logger.info("*** " + counterOfSentMessages.incrementAndGet() +
-                    "th DeliverSm is sent on " + currentFreeMsisdn + " ***");
-            msisdnProcessMap.put(currentFreeMsisdn, new MsisdnState(transactionId, 1000, MSISDN_BUSY));
+                    "th DeliverSm request is sent on " + currentFreeMsisdn + " ***");
+            msisdnProcessMap.put(currentFreeMsisdn, new MsisdnStateData(transactionId, 1000, MSISDN_BUSY));
 
         } catch (RecoverablePduException e1) {
-            logger.error("Got recoverable pdu exception while sending pdu", e1);
-            msisdnProcessMap.put(currentFreeMsisdn, new MsisdnState(-1, 1000, MSISDN_NOT_BUSY));
+            logger.error("Got recoverable pdu exception while sending request", e1);
+            transactionReportService.processOneFailureReport(transactionId, GOT_RCVRBL_PDU_EXCEPTION);
+            makeMsisdnNotBusy(currentFreeMsisdn);
+            //how to continue with another request?
         } catch (UnrecoverablePduException e2) {
-            logger.error("Got unrecoverable pdu exception while sending pdu", e2);
-            msisdnProcessMap.put(currentFreeMsisdn, new MsisdnState(-1, 1000, MSISDN_NOT_BUSY));
+            logger.error("Got unrecoverable pdu exception while sending request", e2);
+            transactionReportService.processOneFailureReport(transactionId, GOT_UNRCVRBL_PDU_EXCEPTION);
+            makeMsisdnNotBusy(currentFreeMsisdn);
         } catch (SmppTimeoutException e3) {
-            logger.error("Got smpp timeout exception", e3);
-            msisdnProcessMap.put(currentFreeMsisdn, new MsisdnState(-1, 1000, MSISDN_NOT_BUSY));
+            logger.error("Got smpp timeout exception while sending request", e3);
+            transactionReportService.processOneFailureReport(transactionId, GOT_SMPP_TIMEOUT_EXCEPTION);
+            makeMsisdnNotBusy(currentFreeMsisdn);
         } catch (SmppChannelException e4) {
-            logger.error("Got smpp channel exception", e4);
-            msisdnProcessMap.put(currentFreeMsisdn, new MsisdnState(-1, 1000, MSISDN_NOT_BUSY));
+            logger.error("Got smpp channel exception while sending request", e4);
+            transactionReportService.processOneFailureReport(transactionId, GOT_SMPP_CHANNEL_EXCEPTION);
+            makeMsisdnNotBusy(currentFreeMsisdn);
         } catch (InterruptedException e5) {
-            logger.error("Got interrupted exception", e5);
-            msisdnProcessMap.put(currentFreeMsisdn, new MsisdnState(-1, 1000, MSISDN_NOT_BUSY));
+            logger.error("Got interrupted exception while sending request", e5);
+            transactionReportService.processOneFailureReport(transactionId, GOT_INTERRUPTED_EXCEPTION);
+            makeMsisdnNotBusy(currentFreeMsisdn);
         }
     }
 
@@ -75,22 +87,33 @@ public class RequestQueueService {
     }
 
     private Boolean hasNoFreeMsisdn() {
-        return msisdnProcessMap.values().stream().noneMatch(value -> (value.getBusyState() == MSISDN_NOT_BUSY));
+        return msisdnProcessMap.values()
+                .stream()
+                .noneMatch(value -> (value.getBusyState() == MSISDN_NOT_BUSY));
     }
 
-    private int getTransactionIdByMsisdn(final String msisdn) {
+    Boolean hasAllMsisdnFree() {
+        return msisdnProcessMap.values()
+                .stream()
+                .allMatch(value -> (value.getBusyState() == MSISDN_NOT_BUSY));
+    }
+
+    //todo сделать корректное not_busy состояние
+    void makeMsisdnNotBusy(final String msisdn) {
+        msisdnProcessMap.put(msisdn, new MsisdnStateData(-1, -1, MSISDN_NOT_BUSY));
+    }
+
+    void fillMsisdnMap() {
+        List<String> msisdnList = readMsisdnProperties.getMsisdnList();
+        msisdnList.forEach(msisdn -> msisdnProcessMap
+                .put(msisdn, new MsisdnStateData(-1, -1, MSISDN_NOT_BUSY)));
+    }
+
+    int getTransactionIdByMsisdn(final String msisdn) {
         return msisdnProcessMap.get(msisdn).getCurrentTransactionId();
     }
 
     void setSmppSession(final String systemId) {
         smppSession = (DefaultSmppSession) CustomSmppServer.getServerSession(systemId);
     }
-
-    void makeTransactionReport(final String msisdn, final byte[] shortMessage) {
-        transactionReportService.processReportInfo(shortMessage, getTransactionIdByMsisdn(msisdn));
-        msisdnProcessMap.put(msisdn, new MsisdnState(-1, 1000, MSISDN_NOT_BUSY));
-
-    }
-
-
 }

@@ -1,7 +1,7 @@
 package com.a1s.subscribegeneratorapp.dao;
 
 import com.a1s.subscribegeneratorapp.mapper.SubscribeRequestMapper;
-import com.a1s.subscribegeneratorapp.model.SubscribeRequest;
+import com.a1s.subscribegeneratorapp.model.SubscribeRequestData;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,13 +29,13 @@ public class SubscribeRequestDao extends JdbcDaoSupport {
     }
 
     @NotNull
-    public Map<Integer, SubscribeRequest> findAll() {
+    public Map<Integer, SubscribeRequestData> findAll() {
         String sql = SubscribeRequestMapper.BASE_SQL;
-        Map<Integer, SubscribeRequest> requestDataMap = new ConcurrentHashMap<>();
+        Map<Integer, SubscribeRequestData> requestDataMap = new ConcurrentHashMap<>();
 
         Object[] params = new Object[] {};
 
-        List<SubscribeRequest> list = new LinkedList<>();
+        List<SubscribeRequestData> list = new LinkedList<>();
         try {
             list = this.getJdbcTemplate().query(sql, params, requestMapper);
 
@@ -43,7 +43,7 @@ public class SubscribeRequestDao extends JdbcDaoSupport {
             logger.error("Empty result for query from database", e);
         }
 
-        for (SubscribeRequest one : list) {
+        for (SubscribeRequestData one : list) {
             requestDataMap.put(one.getId(), one);
         }
         return requestDataMap;

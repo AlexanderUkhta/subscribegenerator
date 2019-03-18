@@ -1,11 +1,11 @@
 package com.a1s.subscribegeneratorapp.model;
 
-public class SubscribeRequest {
+public class SubscribeRequestData {
     private int id, psId;
     private String psIdName, shortNum, requestText, responseText;
 
-    public SubscribeRequest(int id, int psId, String psIdName,
-                            String shortNum, String requestText, String responseText) {
+    public SubscribeRequestData(int id, int psId, String psIdName,
+                                String shortNum, String requestText, String responseText) {
         this.id = id;
         this.psId = psId;
         this.psIdName = psIdName;
@@ -37,30 +37,5 @@ public class SubscribeRequest {
     public String getResponseText() {
         return responseText;
     }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public void setPsId(int psId) {
-        this.psId = psId;
-    }
-
-    public void setPsIdName(String psIdName) {
-        this.psIdName = psIdName;
-    }
-
-    public void setShortNum(String shortNum) {
-        this.shortNum = shortNum;
-    }
-
-    public void setRequestText(String requestText) {
-        this.requestText = requestText;
-    }
-
-    public void setResponseText(String responseText) {
-        this.responseText = responseText;
-    }
-
 
 }

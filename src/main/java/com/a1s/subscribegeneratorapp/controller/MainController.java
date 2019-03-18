@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public class MainController {
 
     @Autowired
-    private ExcelReadService excelReadService = new ExcelReadService();
+    private ExcelReadService excelReadService;
     @Autowired
     private ContextProcessorService contextProcessorService;
     @Autowired
@@ -28,17 +28,19 @@ public class MainController {
 
         model.addAttribute("message", "Got SMPP templates processing");
         return "process";
-
     }
 
-    @RequestMapping(value = "/testFileState", method = RequestMethod.GET)
+
+    @RequestMapping(value = "/testExcelReadService", method = RequestMethod.GET)
     public String showContext(ModelMap model) {
+
         int lastRowNum = 0;
         try {
-           lastRowNum = file.getSheet("Подписки").getLastRowNum();
+           lastRowNum = file.getSheet("Подключение").getLastRowNum();
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
+
         model.addAttribute("message", lastRowNum);
         return "test";
     }

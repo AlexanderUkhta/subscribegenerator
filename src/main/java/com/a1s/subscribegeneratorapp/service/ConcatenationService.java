@@ -16,14 +16,14 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 
-@Service
+@Service("concatenationService")
 public class ConcatenationService {
     private static final Log logger = LogFactory.getLog(ConcatenationService.class);
 
     private Multimap<String, SubmitSmData> messageParts = ArrayListMultimap.create();
 
     @Autowired
-    private RequestQueueService requestQueueService;
+    private TransactionReportService transactionReportService;
 
     public void processUdhConcatPart(final SubmitSm submitSm) {
         String msisdn = submitSm.getDestAddress().getAddress();
@@ -41,9 +41,9 @@ public class ConcatenationService {
 
         if (udhPartsQuantity == messageParts.get(messageFullId).size()) {
             byte[] finalMessage = concatenateUdhOrSar(messageParts.get(messageFullId));
-            messageParts.asMap().remove(messageFullId); //todo: and add finalMessage[] to report
+            messageParts.asMap().remove(messageFullId);
 
-            requestQueueService.makeTransactionReport(msisdn, finalMessage);
+            transactionReportService.processOneInfoReport(finalMessage, msisdn);
         }
 
     }
@@ -70,13 +70,13 @@ public class ConcatenationService {
         String messageFullId = msisdn + linkId + sarMsgRefnum;
 
         messageParts.put(messageFullId, new SubmitSmData(sarSegmentSeqnum,
-                GsmUtil.getShortMessageUserData(submitSm.getShortMessage())));
+                submitSm.getShortMessage()));
 
         if (sarTotalSegments == messageParts.get(messageFullId).size()) {
             byte[] finalMessage = concatenateUdhOrSar(messageParts.get(messageFullId));
             messageParts.asMap().remove(messageFullId);
 
-            requestQueueService.makeTransactionReport(msisdn, finalMessage); //todo: and add finalMessage[] to report
+            transactionReportService.processOneInfoReport(finalMessage, msisdn);
         }
 
     }
@@ -85,13 +85,13 @@ public class ConcatenationService {
         Tlv messagePayload = submitSm.getOptionalParameter(SmppConstants.TAG_MESSAGE_PAYLOAD);
         byte[] shortMessage = messagePayload.getValue();
 
-        requestQueueService.makeTransactionReport(submitSm.getDestAddress().getAddress(), shortMessage);
+        transactionReportService.processOneInfoReport(shortMessage, submitSm.getDestAddress().getAddress());
     }
 
     public void processSimpleMessage(final SubmitSm submitSm) {
         byte[] shortMessage = submitSm.getShortMessage();
 
-        requestQueueService.makeTransactionReport(submitSm.getDestAddress().getAddress(), shortMessage);
+        transactionReportService.processOneInfoReport(shortMessage, submitSm.getDestAddress().getAddress());
     }
 
     /* combines parts of UDH/SAR-concatenated request */

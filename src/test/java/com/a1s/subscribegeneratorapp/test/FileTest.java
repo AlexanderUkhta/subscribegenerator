@@ -24,7 +24,7 @@ public class FileTest {
 
     @Test
     public void test() {
-//        ExcelReadService read = new ExcelReadService();
-        excelReadService.sout();
+        ExcelReadService read = new ExcelReadService();
+//        excelReadService.sout();
     }
 }
