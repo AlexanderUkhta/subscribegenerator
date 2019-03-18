@@ -9,28 +9,17 @@ import com.cloudhopper.smpp.util.DeliveryReceipt;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 
-
-public class DeliveryReceiptTask implements Runnable {
-
+@Component
+class DeliveryReceiptTask {
     private static final Logger logger = LoggerFactory.getLogger(DeliveryReceiptTask.class);
-    private SmppSession session;
-    private SubmitSm req;
-    private String messageId;
-    private String errorCode;
 
-
-    public DeliveryReceiptTask(SmppSession session, SubmitSm req, String messageId, String errorCode) {
-        this.session = session;
-        this.req = req;
-        this.messageId = messageId;
-        this.errorCode = errorCode;
-    }
-
-    @Override
-    public void run() {
+    @Scheduled(fixedRate = 1000)
+    void createDeliveryReceipt(SmppSession smppSession, SubmitSm req, String messageId, String errorCode) {
         try {
             DeliverSm dsm = new DeliverSm();
 
@@ -54,8 +43,8 @@ public class DeliveryReceiptTask implements Runnable {
             }
 
             receipt.setState(receiptState);
-            receipt.setSubmitCount(session.getCounters().getRxSubmitSM().getRequest());
-            receipt.setDeliveredCount(session.getCounters().getTxDeliverSM().getRequest());
+            receipt.setSubmitCount(smppSession.getCounters().getRxSubmitSM().getRequest());
+            receipt.setDeliveredCount(smppSession.getCounters().getTxDeliverSM().getRequest());
 
 
             String str = receipt.toShortMessage();
@@ -64,7 +53,7 @@ public class DeliveryReceiptTask implements Runnable {
 
             dsm.setShortMessage(msgBuffer);
 
-            session.sendRequestPdu(dsm, TimeUnit.SECONDS.toMillis(60), false);
+            smppSession.sendRequestPdu(dsm, TimeUnit.SECONDS.toMillis(60), false);
 
         } catch (Exception ex) {
             logger.error("{}", ex);

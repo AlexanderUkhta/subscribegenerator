@@ -1,5 +1,5 @@
 package com.a1s.subscribegeneratorapp.smsc;
-import com.a1s.subscribegeneratorapp.config.ApplicationContextHolder;
+
 import com.a1s.subscribegeneratorapp.service.ConcatenationService;
 import com.cloudhopper.smpp.PduAsyncResponse;
 import com.cloudhopper.smpp.SmppConstants;
@@ -7,33 +7,33 @@ import com.cloudhopper.smpp.SmppServerSession;
 import com.cloudhopper.smpp.SmppSession;
 import com.cloudhopper.smpp.impl.DefaultSmppSessionHandler;
 import com.cloudhopper.smpp.pdu.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.lang.ref.WeakReference;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Component
 public class CustomSmppSessionHandler extends DefaultSmppSessionHandler {
     private final Logger logger = LoggerFactory.getLogger(CustomSmppSessionHandler.class);
 
-    private ConcatenationService concatenationService =
-            (ConcatenationService) ApplicationContextHolder.getApplicationContext().getBean("concatenationService");
+    @Autowired
+    private ConcatenationService concatenationService;
+    @Autowired
+    private DeliveryReceiptTask deliveryReceiptTask;
 
     private WeakReference<SmppSession> sessionRef;
-    private ScheduledExecutorService pool;
-
     private long sessionId;
 
     private AtomicInteger responseCounter = new AtomicInteger(0);
-    private static AtomicInteger requestSubmitSmCounter = new AtomicInteger(0);
-    private static AtomicInteger deliverSmRespCounter = new AtomicInteger(0);
+    private AtomicInteger requestSubmitSmCounter = new AtomicInteger(0);
+    private AtomicInteger deliverSmRespCounter = new AtomicInteger(0);
 
-    CustomSmppSessionHandler(SmppServerSession session, ScheduledExecutorService pool) {
+    CustomSmppSessionHandler(SmppServerSession session) {
         this.sessionRef = new WeakReference<>(session);
-        this.pool = pool;
     }
 
     void setSessionId(Long sessionId) {
@@ -87,23 +87,32 @@ public class CustomSmppSessionHandler extends DefaultSmppSessionHandler {
 
             SubmitSmResp resp = (SubmitSmResp) pduRequest.createResponse();
             long id = responseCounter.incrementAndGet();
-            try {
+
+            if (session != null) {
                 resp.setMessageId(String.valueOf(id) + session.getConfiguration().getName() + ":" + sessionId);
-            } catch (NullPointerException e) {
-                logger.error("Current session appears like NULL while .getConfiguration", e);
+            } else {
+                logger.error("Current session appears like NULL while .getConfiguration", new NullPointerException());
             }
 
             if (((SubmitSm) pduRequest).getRegisteredDelivery() > 0) {
-                pool.schedule(new DeliveryReceiptTask(
-                        session, (SubmitSm) pduRequest, resp.getMessageId(), "000"), 1, TimeUnit.SECONDS);
+                deliveryReceiptTask.createDeliveryReceipt(
+                        session, (SubmitSm) pduRequest, resp.getMessageId(), "000");
             }
 
             return resp;
 
         } else if (pduRequest instanceof Unbind) {
-            session.destroy();
+            if (session != null) {
+                session.destroy();
+            } else {
+                logger.error("Cannot destroy an empty session", new NullPointerException());
+            }
 
-            session.unbind(1000);
+            if (session != null) {
+                session.unbind(1000);
+            } else {
+                logger.error("Cannot unbind an empty session", new NullPointerException());
+            }
             return pduRequest.createResponse();
         }
         return pduRequest.createResponse();

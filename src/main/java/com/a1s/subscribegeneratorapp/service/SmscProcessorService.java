@@ -25,15 +25,17 @@ public class SmscProcessorService {
     @Autowired
     private TransactionReportService transactionReportService;
 
-    private DeliverSm currentReadyDeliverSm;
+    private DeliverSm currentReadyDeliverSm = new DeliverSm();
+
+    //todo make autowired and put this to lifecycle.start()
     private CustomSmppServer customSmppServer;
     {
-        currentReadyDeliverSm = new DeliverSm();
         customSmppServer = new CustomSmppServer(
                 CustomSmppServer.getBaseServerConfiguration(SMPP_SERVER_PORT, SYSTEM_ID), new NioEventLoopGroup(),
                 new NioEventLoopGroup());
     }
 
+    //todo remove?
     void startSmsc(CountDownLatch bindCompleted) {
         customSmppServer.startServerMain(bindCompleted);
         requestQueueService.setSmppSession(SYSTEM_ID);

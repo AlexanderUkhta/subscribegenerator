@@ -98,7 +98,6 @@ public class RequestQueueService {
                 .allMatch(value -> (value.getBusyState() == MSISDN_NOT_BUSY));
     }
 
-    //todo сделать корректное not_busy состояние
     void makeMsisdnNotBusy(final String msisdn) {
         msisdnProcessMap.put(msisdn, new MsisdnStateData(-1, -1, MSISDN_NOT_BUSY));
     }
