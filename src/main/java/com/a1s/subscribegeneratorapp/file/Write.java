@@ -34,8 +34,13 @@ public class Write {
         return dateFormat.format(new Date());
     }
 
-    public XSSFRow createRow() {
-        return null;
+    /**
+     * Creates a row at the specified id
+     * @param rowNum
+     * @return
+     */
+    private XSSFRow createRow(int rowNum) {
+        return sheet.createRow(rowNum);
     }
 
     /**
