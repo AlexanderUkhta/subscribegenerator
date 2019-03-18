@@ -4,7 +4,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -16,8 +15,8 @@ import java.io.IOException;
 
 
 @Component("file")
-public class File {
-    private static final Log logger = LogFactory.getLog(File.class);
+public class Read {
+    private static final Log logger = LogFactory.getLog(Read.class);
     private static final String file = "src/main/resources/file.xlsx";
     private XSSFWorkbook book = getBook();
 

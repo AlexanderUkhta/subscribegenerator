@@ -1,6 +1,6 @@
 package com.a1s.subscribegeneratorapp.controller;
 
-import com.a1s.subscribegeneratorapp.file.File;
+import com.a1s.subscribegeneratorapp.file.Read;
 import com.a1s.subscribegeneratorapp.service.ExcelReadService;
 import com.a1s.subscribegeneratorapp.service.ContextProcessorService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ public class MainController {
     @Autowired
     private ContextProcessorService contextProcessorService;
     @Autowired
-    private File file;
+    private Read read;
 
     @RequestMapping(value = "/processData", method = RequestMethod.GET)
     public String processRequests(ModelMap model) {
@@ -36,7 +36,7 @@ public class MainController {
 
         int lastRowNum = 0;
         try {
-           lastRowNum = file.getSheet("Подключение").getLastRowNum();
+           lastRowNum = read.getSheet("Подключение").getLastRowNum();
         } catch (NullPointerException e) {
             e.printStackTrace();
         }

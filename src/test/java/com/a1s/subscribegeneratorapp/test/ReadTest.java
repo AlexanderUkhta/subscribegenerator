@@ -13,7 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class FileTest {
+public class ReadTest {
 
     @Autowired
     private ExcelReadService excelReadService;
@@ -24,7 +24,7 @@ public class FileTest {
 
     @Test
     public void test() {
-        ExcelReadService read = new ExcelReadService();
+//        ExcelReadService read = new ExcelReadService();
 //        excelReadService.sout();
     }
 }
