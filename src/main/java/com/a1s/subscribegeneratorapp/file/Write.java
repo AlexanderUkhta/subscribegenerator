@@ -2,18 +2,40 @@ package com.a1s.subscribegeneratorapp.file;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Write {
     private static final Log logger = LogFactory.getLog(Write.class);
     private XSSFWorkbook book;
+    private XSSFSheet sheet;
+    private String sheetName;
 
     public Write() {
+        sheetName = getDateWithHourAccuracy();
         book = new XSSFWorkbook();
+        sheet = book.createSheet(sheetName);
+    }
+
+    /**
+     * Receiving the date up to an hour
+     * @return string like "2019-03-18 18-49"
+     */
+    private String getDateWithHourAccuracy() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm");
+        System.out.println(dateFormat.format(new Date()));
+        return dateFormat.format(new Date());
+    }
+
+    public XSSFRow createRow() {
+        return null;
     }
 
     /**
@@ -44,6 +66,5 @@ public class Write {
             logger.error(e);
             e.printStackTrace();
         }
-
     }
 }
