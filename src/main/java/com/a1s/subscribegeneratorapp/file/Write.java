@@ -47,6 +47,9 @@ public class Write {
         return dateFormat.format(new Date());
     }
 
+    /**
+     * Added generation of column names in the report.
+     */
     private void createFirstRow() {
         List<String> columnName = readExcelProperties.getExcelList();
         XSSFRow row = sheet.createRow(0);
