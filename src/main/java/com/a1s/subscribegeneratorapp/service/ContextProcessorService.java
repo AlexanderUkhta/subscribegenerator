@@ -28,7 +28,6 @@ public class ContextProcessorService {
 
     public void process() {
         logger.info("Got context map full, going to start SMSC...");
-        //todo all this away?
         CountDownLatch bindCompleted = new CountDownLatch(1);
         smscProcessorService.startSmsc(bindCompleted);
         try {
@@ -39,11 +38,11 @@ public class ContextProcessorService {
 
         logger.info("*** Filling msisdn map... ***");
         requestQueueService.fillMsisdnMap();
-        //todo if smppSession != null?
         logger.info("*** Start making requests from userdata... ***");
         requests.forEach((id, requestInfo) ->
                 smscProcessorService.makeRequestFromDataAndSend(requestInfo));
 
+        logger.info("*** All requests have been formed from from requestData Map, going to make full report ***");
         try {
             ultimateWhile(requestQueueService::hasAllMsisdnFree, 200);
         } catch (TimeoutException e) {
@@ -51,7 +50,7 @@ public class ContextProcessorService {
             logger.warn("Can't get all transactions' results, going to make report on existing data");
         }
 
-        logger.info("*** Start creating data report...");
+        logger.info("*** Start creating data report... ***");
         transactionReportService.makeFullDataReport();
     }
 

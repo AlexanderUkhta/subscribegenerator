@@ -40,6 +40,8 @@ public class ConcatenationService {
                 GsmUtil.getShortMessageUserData(submitSm.getShortMessage())));
 
         if (udhPartsQuantity == messageParts.get(messageFullId).size()) {
+            logger.info("Got all UDH parts for msisdn = " + submitSm.getDestAddress().getAddress() +
+                    ", processing UDH parts");
             byte[] finalMessage = concatenateUdhOrSar(messageParts.get(messageFullId));
             messageParts.asMap().remove(messageFullId);
 
@@ -73,6 +75,8 @@ public class ConcatenationService {
                 submitSm.getShortMessage()));
 
         if (sarTotalSegments == messageParts.get(messageFullId).size()) {
+            logger.info("Got all SAR parts for msisdn = " + submitSm.getDestAddress().getAddress() +
+                    ", processing SAR parts");
             byte[] finalMessage = concatenateUdhOrSar(messageParts.get(messageFullId));
             messageParts.asMap().remove(messageFullId);
 
@@ -82,16 +86,22 @@ public class ConcatenationService {
     }
 
     public void processPayloadConcatMessage(final SubmitSm submitSm) {
+        logger.info("Got PAYLOAD for msisdn = " + submitSm.getDestAddress().getAddress() +
+                ", processing");
         Tlv messagePayload = submitSm.getOptionalParameter(SmppConstants.TAG_MESSAGE_PAYLOAD);
         byte[] shortMessage = messagePayload.getValue();
 
         transactionReportService.processOneInfoReport(shortMessage, submitSm.getDestAddress().getAddress());
+
     }
 
     public void processSimpleMessage(final SubmitSm submitSm) {
+        logger.info("Got simple message for msisdn = " + submitSm.getDestAddress().getAddress() +
+                ", processing");
         byte[] shortMessage = submitSm.getShortMessage();
 
         transactionReportService.processOneInfoReport(shortMessage, submitSm.getDestAddress().getAddress());
+
     }
 
     /* combines parts of UDH/SAR-concatenated request */
@@ -112,9 +122,11 @@ public class ConcatenationService {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
         }
 
        return fullMultipartMessage.toByteArray();
 
     }
+
 }

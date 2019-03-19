@@ -53,6 +53,7 @@ class DeliveryReceiptTask {
 
             dsm.setShortMessage(msgBuffer);
 
+            logger.info("Sending delivery_receipt...");
             smppSession.sendRequestPdu(dsm, TimeUnit.SECONDS.toMillis(60), false);
 
         } catch (Exception ex) {

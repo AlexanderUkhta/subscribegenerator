@@ -43,7 +43,7 @@ public class SmscProcessorService {
 
     void makeRequestFromDataAndSend(final SubscribeRequestData dataForRequest) {
         Address destinationAddress = new Address((byte) 1, (byte) 1, dataForRequest.getShortNum());
-
+        logger.info("Creating " + dataForRequest.getId() + "th deliver_sm, yet without msisdn...");
         try {
             currentReadyDeliverSm.setDestAddress(destinationAddress);
             currentReadyDeliverSm.setShortMessage(dataForRequest.getRequestText().getBytes(Charset.forName("UTF-16")));
@@ -51,7 +51,6 @@ public class SmscProcessorService {
         } catch (SmppInvalidArgumentException e) {
             logger.error("Smth wrong while setting short message for deliver_sm", e);
             transactionReportService.processOneFailureReport(dataForRequest.getId(), GOT_SMPP_INVALID_ARG_EXCEPTION);
-            //how to continue with another request?
         }
 
         sendRequest(currentReadyDeliverSm, dataForRequest.getId());

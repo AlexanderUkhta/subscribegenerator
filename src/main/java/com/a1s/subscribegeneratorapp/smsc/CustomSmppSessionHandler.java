@@ -47,6 +47,7 @@ public class CustomSmppSessionHandler extends DefaultSmppSessionHandler {
                 CustomSmppServer.receivedDeliverSmResps.put(deliverSmRespCounter.incrementAndGet(),
                         (DeliverSmResp) pduAsyncResponse.getResponse());
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -54,10 +55,12 @@ public class CustomSmppSessionHandler extends DefaultSmppSessionHandler {
         if (pduAsyncResponse.getResponse().getCommandStatus() != SmppConstants.STATUS_OK) {
             logger.info("pdu request sent with a problem, got error in response {}",
                     pduAsyncResponse.getResponse().getClass().getCanonicalName());
+
         } else {
             logger.info("pdu request sent succesfully, got response {}",
                     pduAsyncResponse.getResponse().getClass().getCanonicalName());
         }
+
     }
 
     @Override
@@ -81,22 +84,28 @@ public class CustomSmppSessionHandler extends DefaultSmppSessionHandler {
             } else {
                 concatenationService.processSimpleMessage((SubmitSm) pduRequest);
                 logger.info("Got simple message with linkId, processing...");
+
             }
 
             CustomSmppServer.receivedSubmitSmMessages.put(requestSubmitSmCounter.incrementAndGet(), (SubmitSm) pduRequest);
 
+            logger.info("Making pdu_response as an answer to submit_sm...");
             SubmitSmResp resp = (SubmitSmResp) pduRequest.createResponse();
             long id = responseCounter.incrementAndGet();
 
             if (session != null) {
                 resp.setMessageId(String.valueOf(id) + session.getConfiguration().getName() + ":" + sessionId);
+
             } else {
                 logger.error("Current session appears like NULL while .getConfiguration", new NullPointerException());
+
             }
 
             if (((SubmitSm) pduRequest).getRegisteredDelivery() > 0) {
+                logger.info("Delivery_receipt needed, creating delivery_receipt after 1 second passed...");
                 deliveryReceiptTask.createDeliveryReceipt(
                         session, (SubmitSm) pduRequest, resp.getMessageId(), "000");
+
             }
 
             return resp;
@@ -113,11 +122,11 @@ public class CustomSmppSessionHandler extends DefaultSmppSessionHandler {
             } else {
                 logger.error("Cannot unbind an empty session", new NullPointerException());
             }
+
             return pduRequest.createResponse();
         }
+
         return pduRequest.createResponse();
     }
-
-
 
 }

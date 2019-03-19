@@ -13,7 +13,6 @@ public class ConfigurationConstantsAndMethods {
 
     public static AtomicInteger counterOfSentMessages = new AtomicInteger(0);
 
-
     public static final String ALL_MSISDN_BUSY_FOR_TOO_LONG = "All msisdns were busy for too long, transaction failed";
     public static final String GOT_RCVRBL_PDU_EXCEPTION = "Got recoverable pdu exception while sending request";
     public static final String GOT_UNRCVRBL_PDU_EXCEPTION = "Got recoverable pdu exception while sending request";
