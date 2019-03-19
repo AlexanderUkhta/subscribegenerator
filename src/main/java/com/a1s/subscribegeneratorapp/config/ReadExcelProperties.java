@@ -13,7 +13,7 @@ import java.util.List;
 public class ReadExcelProperties {
     private List<String> excelList = new ArrayList<>();
 
-    public List<String> getMsisdnList() {
+    public List<String> getExcelList() {
         return this.excelList;
     }
 }

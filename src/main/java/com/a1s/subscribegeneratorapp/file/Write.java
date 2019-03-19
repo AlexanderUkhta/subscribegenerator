@@ -1,13 +1,14 @@
 package com.a1s.subscribegeneratorapp.file;
 
+import com.a1s.subscribegeneratorapp.config.ReadExcelProperties;
 import com.a1s.subscribegeneratorapp.model.ReportData;
-import com.a1s.subscribegeneratorapp.model.SubscribeRequestData;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;
@@ -15,6 +16,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 @Component()
 public class Write {
@@ -22,6 +24,9 @@ public class Write {
     private XSSFWorkbook book;
     private XSSFSheet sheet;
     private String sheetName;
+
+    @Autowired
+    private ReadExcelProperties readExcelProperties;
 
     public Write() {
         sheetName = getDateWithHourAccuracy();
@@ -39,21 +44,39 @@ public class Write {
         return dateFormat.format(new Date());
     }
 
-    public void createErrorRow(int rowNumber, ReportData data){
+    public void createRow(int rowNumber, ReportData data){
+        List<String> columnName = readExcelProperties.getExcelList();
         XSSFRow row = sheet.createRow(rowNumber);
-        while()
-    }
-
-    /**
-     * Deletes the page with the report in case the report already exists.
-     * @param sheetName
-     */
-    private void deleteExistReport(String sheetName) {
-        try {
-            book.removeSheetAt(book.getSheetIndex(sheetName));
-        } catch(Exception e) {
-
+        for (int i = 0; i < columnName.size(); i++) {
+            XSSFCell cell = row.createCell(i);
+            switch(columnName.get(i)) {
+                case ("Название рассылки"):
+                    cell.setCellValue(data.getSubscribeRequestData().getPsIdName());
+                    break;
+                case ("ps id"):
+                    cell.setCellValue(data.getSubscribeRequestData().getPsId());
+                    break;
+                case ("Ожидаемый результат"):
+                    cell.setCellValue(data.getSubscribeRequestData().getResponseText());
+                    break;
+                case("Действительный результат"):
+                    cell.setCellValue(data.getActualResponse());
+                    break;
+                case ("Ошибка"):
+                    cell.setCellValue(data.getErrorMessage());
+                    break;
+                case ("Короткий номер"):
+                    cell.setCellValue(data.getSubscribeRequestData().getShortNum());
+                    break;
+                case ("Текст сообщения"):
+                    cell.setCellValue(data.getSubscribeRequestData().getRequestText());
+                    break;
+                case ("Нотификация при подключении"):
+                    cell.setCellValue(data.getSubscribeRequestData().getResponseText());
+                    break;
+            }
         }
+
     }
 
     /**
