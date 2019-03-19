@@ -71,13 +71,12 @@ public class Write {
             XSSFCell cell = row.createCell(i);
             switch(columnName.get(i)) {
                 case ("Название рассылки"):
-                    cell.setCellValue(data.getSubscribeRequestData().getPsIdName());
-                    break;
+                case ("Короткий номер"):
+                case ("Текст сообщения"):
+                case ("Нотификация при подключении"):
                 case ("ps id"):
-                    cell.setCellValue(data.getSubscribeRequestData().getPsId());
-                    break;
                 case ("Ожидаемый результат"):
-                    cell.setCellValue(data.getSubscribeRequestData().getResponseText());
+                    cell.setCellValue(data.getSubscribeRequestData().getPsIdName());
                     break;
                 case("Действительный результат"):
                     String actualResponse = data.getActualResponse();
@@ -102,15 +101,6 @@ public class Write {
                         XSSFCell expectedResponse = row.getCell(i-2);
                         expectedResponse.setCellStyle(cellStyle.redBorderCell(book));
                     }
-                    break;
-                case ("Короткий номер"):
-                    cell.setCellValue(data.getSubscribeRequestData().getShortNum());
-                    break;
-                case ("Текст сообщения"):
-                    cell.setCellValue(data.getSubscribeRequestData().getRequestText());
-                    break;
-                case ("Нотификация при подключении"):
-                    cell.setCellValue(data.getSubscribeRequestData().getResponseText());
                     break;
             }
         }
