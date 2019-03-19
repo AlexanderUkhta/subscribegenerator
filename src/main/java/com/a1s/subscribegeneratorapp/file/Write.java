@@ -1,5 +1,6 @@
 package com.a1s.subscribegeneratorapp.file;
 
+import com.a1s.subscribegeneratorapp.model.ReportData;
 import com.a1s.subscribegeneratorapp.model.SubscribeRequestData;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,8 +39,9 @@ public class Write {
         return dateFormat.format(new Date());
     }
 
-    public void createRow(){
-
+    public void createErrorRow(int rowNumber, ReportData data){
+        XSSFRow row = sheet.createRow(rowNumber);
+        while()
     }
 
     /**
