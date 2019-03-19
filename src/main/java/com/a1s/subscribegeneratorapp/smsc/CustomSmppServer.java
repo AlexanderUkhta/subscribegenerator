@@ -4,45 +4,42 @@ import com.cloudhopper.smpp.*;
 import com.cloudhopper.smpp.impl.DefaultSmppServer;
 import com.cloudhopper.smpp.pdu.*;
 import com.cloudhopper.smpp.type.SmppChannelException;
-import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import io.netty.channel.EventLoopGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-public class CustomSmppServer extends DefaultSmppServer{
+import static com.a1s.ConfigurationConstantsAndMethods.ultimateWhile;
+
+@Component
+public class CustomSmppServer extends DefaultSmppServer {
     private static final Logger logger = LoggerFactory.getLogger(CustomSmppServer.class);
 
     private static ConcurrentHashMap<String, SmppServerSession> serverSessionsActive = new ConcurrentHashMap<>();
-    private static ConcurrentHashMap<Integer, CustomSmppServerHandler> serverHandlers = new ConcurrentHashMap<>();
-    public static ConcurrentHashMap<Integer, SubmitSm> receivedSubmitSmMessages = new ConcurrentHashMap<>();
+    static ConcurrentHashMap<Integer, SubmitSm> receivedSubmitSmMessages = new ConcurrentHashMap<>();
     static ConcurrentHashMap<Integer, DeliverSmResp> receivedDeliverSmResps = new ConcurrentHashMap<>();
-    public static Queue<SubmitSm> requestsDeniedByError = new ConcurrentLinkedQueue<>();
 
     private static CountDownLatch bindCompleted;
-    private CustomSmppServerHandler serverHandler;
-    private EventLoopGroup bossGroup;
-    private EventLoopGroup workerGroup;
-    private SmppServerConfiguration smppServerConfiguration;
 
-    private static ScheduledExecutorService asyncPool = Executors.newScheduledThreadPool(15);
-    private static ScheduledThreadPoolExecutor monitorExecutor = (ScheduledThreadPoolExecutor)Executors.newScheduledThreadPool(1, new ThreadFactory() {
-    private AtomicInteger sequence = new AtomicInteger(0);
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread t = new Thread(r);
-            t.setName("SmppServerSessionWindowMonitorPool-" + sequence.getAndIncrement());
-            return t;
-        }
+    @Autowired
+    private static CustomSmppSessionHandler customSmppSessionHandler;
+
+    private static ScheduledThreadPoolExecutor monitorExecutor =
+        (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1, new ThreadFactory() {
+        private AtomicInteger sequence = new AtomicInteger(0);
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread t = new Thread(r);
+                t.setName("SmppServerSessionWindowMonitorPool-" + sequence.getAndIncrement());
+                return t;
+            }
     });
 
     public CustomSmppServer(SmppServerConfiguration configuration, EventLoopGroup bossGroup, EventLoopGroup workerGroup) {
-        super(configuration, getNewServerHandler(configuration.getPort()), monitorExecutor, bossGroup, workerGroup);
-        this.bossGroup = bossGroup;
-        this.workerGroup = workerGroup;
-        this.smppServerConfiguration = configuration;
-        this.serverHandler = serverHandlers.get(configuration.getPort());
+        super(configuration, new CustomSmppServerHandler(), monitorExecutor, bossGroup, workerGroup);
     }
 
 
@@ -52,7 +49,7 @@ public class CustomSmppServer extends DefaultSmppServer{
         try {
             this.start();
         } catch (SmppChannelException e) {
-            e.printStackTrace();
+            logger.error("Got SmppChannelException", e);
         }
         logger.info("SMPP server started");
     }
@@ -78,21 +75,9 @@ public class CustomSmppServer extends DefaultSmppServer{
         return serverSessionsActive.get(key);
     }
 
-    private static CustomSmppServerHandler getNewServerHandler(Integer port) {
-        CustomSmppServerHandler smppServerHandler = new CustomSmppServerHandler(asyncPool);
-        serverHandlers.put(port, smppServerHandler);
-        return smppServerHandler;
-    }
 
     public static class CustomSmppServerHandler implements SmppServerHandler {
-
-        ScheduledExecutorService pool;
-
         ConcurrentHashMap<Long, SmppSessionHandler> sessionHandlers = new ConcurrentHashMap<>();
-
-        CustomSmppServerHandler(ScheduledExecutorService pool) {
-            this.pool = pool;
-        }
 
         @Override
         public void sessionBindRequested(Long sessionId, SmppSessionConfiguration sessionConfiguration, final BaseBind bindRequest) {
@@ -106,12 +91,16 @@ public class CustomSmppServer extends DefaultSmppServer{
         public void sessionCreated(Long sessionId, SmppServerSession session, BaseBindResp preparedBindResponse) {
             logger.info("Session created: {}", session);
 
-            CustomSmppSessionHandler sessionHandler = new CustomSmppSessionHandler(session, pool);
-            session.serverReady(sessionHandler);
-            sessionHandler.setSessionId(sessionId);
-            sessionHandlers.put(sessionId, sessionHandler);
+            // static session_handler is used, if more than 1 session on a server - it needs being refactored
+            session.serverReady(customSmppSessionHandler);
+            customSmppSessionHandler.setSessionId(sessionId);
+            sessionHandlers.put(sessionId, customSmppSessionHandler);
 
-            while (!session.isBound());
+            try {
+                ultimateWhile(() -> (!session.isBound()), 30);
+            } catch (TimeoutException e) {
+                logger.error("Session did not start at 30 seconds");
+            }
             serverSessionsActive.put(session.getConfiguration().getSystemId(), session);
             CustomSmppServer.bindCompleted.countDown();
         }
