@@ -28,6 +28,9 @@ public class Write {
     @Autowired
     private ReadExcelProperties readExcelProperties;
 
+    @Autowired
+    private CellStyle cellStyle;
+
     public Write() {
         sheetName = getDateWithHourAccuracy();
         book = new XSSFWorkbook();
@@ -40,10 +43,14 @@ public class Write {
      */
     private String getDateWithHourAccuracy() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm");
-        System.out.println(dateFormat.format(new Date()));
         return dateFormat.format(new Date());
     }
 
+    /**
+     * Creates a row in the report and fills it with data from the ReportData
+     * @param rowNumber
+     * @param data
+     */
     public void createRow(int rowNumber, ReportData data){
         List<String> columnName = readExcelProperties.getExcelList();
         XSSFRow row = sheet.createRow(rowNumber);
@@ -60,10 +67,28 @@ public class Write {
                     cell.setCellValue(data.getSubscribeRequestData().getResponseText());
                     break;
                 case("Действительный результат"):
+                    String actualResponse = data.getActualResponse();
+                    String expectedResult = data.getSubscribeRequestData().getResponseText();
                     cell.setCellValue(data.getActualResponse());
+                    XSSFCell expectedCell = row.getCell(i-2);
+                    if(actualResponse.equals(expectedResult)) {
+                        cell.setCellStyle(cellStyle.greenBorderCell(book));
+                        expectedCell.setCellStyle(cellStyle.greenBorderCell(book));
+                    } else {
+                        cell.setCellStyle(cellStyle.redBorderCell(book));
+                        expectedCell.setCellStyle(cellStyle.redBorderCell(book));
+                    }
                     break;
                 case ("Ошибка"):
-                    cell.setCellValue(data.getErrorMessage());
+                    String errorMessage = data.getErrorMessage();
+                    if(errorMessage != null) {
+                        cell.setCellValue(data.getErrorMessage());
+                        cell.setCellStyle(cellStyle.redBorderCell(book));
+                        XSSFCell responseCell = row.getCell(i-1);
+                        responseCell.setCellStyle(cellStyle.redBorderCell(book));
+                        XSSFCell expectedResponse = row.getCell(i-2);
+                        expectedResponse.setCellStyle(cellStyle.redBorderCell(book));
+                    }
                     break;
                 case ("Короткий номер"):
                     cell.setCellValue(data.getSubscribeRequestData().getShortNum());
@@ -76,7 +101,7 @@ public class Write {
                     break;
             }
         }
-
+        saveReport();
     }
 
     /**
