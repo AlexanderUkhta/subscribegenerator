@@ -11,9 +11,9 @@ import java.util.List;
 @PropertySource("classpath:msisdn.properties")
 @ConfigurationProperties(prefix = "app")
 public class ReadExcelProperties {
-    private List<String> ecxelList = new ArrayList<>();
+    private List<String> excelList = new ArrayList<>();
 
     public List<String> getMsisdnList() {
-        return this.ecxelList;
+        return this.excelList;
     }
 }
