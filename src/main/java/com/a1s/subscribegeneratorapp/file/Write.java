@@ -35,6 +35,7 @@ public class Write {
         sheetName = getDateWithHourAccuracy();
         book = new XSSFWorkbook();
         sheet = book.createSheet(sheetName);
+        createFirstRow();
     }
 
     /**
@@ -44,6 +45,15 @@ public class Write {
     private String getDateWithHourAccuracy() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm");
         return dateFormat.format(new Date());
+    }
+
+    private void createFirstRow() {
+        List<String> columnName = readExcelProperties.getExcelList();
+        XSSFRow row = sheet.createRow(0);
+        for (int i = 0; i < columnName.size(); i++) {
+            XSSFCell cell = row.createCell(i);
+            cell.setCellValue(columnName.get(i));
+        }
     }
 
     /**
