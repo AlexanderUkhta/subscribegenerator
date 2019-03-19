@@ -7,9 +7,7 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -17,9 +15,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-@Configuration
-@PropertySource("classpath:excel.properties")
-@ConfigurationProperties(prefix = "app")
+@Component()
 public class Write {
     private static final Log logger = LogFactory.getLog(Write.class);
     private XSSFWorkbook book;
@@ -42,22 +38,7 @@ public class Write {
         return dateFormat.format(new Date());
     }
 
-    /**
-     * Creates a row at the specified id
-     * @param rowNum
-     * @return
-     */
-    private XSSFRow createRow(int rowNum) {
-        return sheet.createRow(rowNum);
-    }
-
-    private void setFistRow(){
-        XSSFRow row = createRow(0);
-        XSSFCell cell = row.createCell(psid);
-    }
-
-    private void setCell(SubscribeRequestData data) {
-        XSSFRow row = createRow(data.getId());
+    public void createRow(){
 
     }
 

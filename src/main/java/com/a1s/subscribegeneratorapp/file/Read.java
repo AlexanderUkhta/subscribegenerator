@@ -14,7 +14,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 
-@Component("file")
+@Component()
 public class Read {
     private static final Log logger = LogFactory.getLog(Read.class);
     private static final String file = "src/main/resources/file.xlsx";
