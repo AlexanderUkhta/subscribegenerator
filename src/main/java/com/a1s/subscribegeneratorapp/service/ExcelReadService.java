@@ -1,6 +1,6 @@
 package com.a1s.subscribegeneratorapp.service;
 
-import com.a1s.subscribegeneratorapp.file.Read;
+import com.a1s.subscribegeneratorapp.excel.ReadFromExcel;
 import com.a1s.subscribegeneratorapp.model.SubscribeRequestData;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -8,39 +8,48 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class ExcelReadService {
     private static final Log logger = LogFactory.getLog(ExcelReadService.class);
 
     @Autowired
-    private Read read;
+    private ReadFromExcel readFromExcel;
 
     /**
      * Fills map with objects consisting of id (row number), ps id, short number, request text, response text (welcome notification).
      * @return
      */
     public Map<Integer, SubscribeRequestData> findAll() {
-        Map<Integer, SubscribeRequestData> treeMap = new TreeMap<>();
-        for(int i = 1; i < read.getLastRowId(read.getSheet("Подключение")); i++) {
-            int psid = Integer.parseInt(read.getCellValue(i, read.getCellId("ps id", read.getSheet("Подключение")),
-                    read.getSheet("Подключение")));
+        logger.info("Started reading context from excel document.");
+        Map<Integer, SubscribeRequestData> requestDataMap = new ConcurrentHashMap<>();
+        for(int i = 1; i < readFromExcel.getLastRowId(readFromExcel.getSheet("Подключение")); i++) {
+
+            int psid = Integer.parseInt(readFromExcel.getCellValue(i, readFromExcel.getCellId("ps id",
+                    readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение")));
+
             if (psid == 0) {
                 logger.warn("Empty ps id in row " + i + 1);
+
             } else {
-                String shortNum = read.getCellValue(i, read.getCellId("Короткий номер", read.getSheet("Подключение")),
-                        read.getSheet("Подключение"));
-                String textRequest = read.getCellValue(i, read.getCellId("Текст сообщения", read.getSheet("Подключение")),
-                        read.getSheet("Подключение"));
-                String welcomeNotification = read.getCellValue(findRow(psid), read.getCellId("Уведомление при подключении", read.getSheet("Рассылки")),
-                        read.getSheet("Рассылки"));
-                String subscriptionName = read.getCellValue(findRow(psid), read.getCellId("Название рассылки", read.getSheet("Рассылки")),
-                        read.getSheet("Рассылки"));
-                treeMap.put(i, new SubscribeRequestData(i, psid, subscriptionName, shortNum, textRequest, welcomeNotification));
+                String shortNum = readFromExcel.getCellValue(i, readFromExcel.getCellId("Короткий номер",
+                        readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение"));
+
+                String textRequest = readFromExcel.getCellValue(i, readFromExcel.getCellId("Текст сообщения",
+                        readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение"));
+
+                String welcomeNotification = readFromExcel.getCellValue(findRow(psid), readFromExcel.getCellId("Уведомление при подключении",
+                                readFromExcel.getSheet("Рассылки")), readFromExcel.getSheet("Рассылки"));
+
+                String subscriptionName = readFromExcel.getCellValue(findRow(psid), readFromExcel.getCellId("Название рассылки",
+                        readFromExcel.getSheet("Рассылки")), readFromExcel.getSheet("Рассылки"));
+
+                requestDataMap.put(i, new SubscribeRequestData(i, psid, subscriptionName, shortNum, textRequest, welcomeNotification));
             }
         }
-        return treeMap;
+        logger.info("Finished reading context from excel document.");
+        return requestDataMap;
     }
 
     /**
@@ -50,9 +59,11 @@ public class ExcelReadService {
      */
     private int findRow(final int psId) {
         int row = 0;
-        for (int i = 1; i < read.getLastRowId(read.getSheet("Рассылки")); i++) {
-            int id = Integer.valueOf(read.getCellValue(i, read.getCellId("ps id", read.getSheet("Рассылки")),
-                    read.getSheet("Рассылки")));
+
+        for (int i = 1; i < readFromExcel.getLastRowId(readFromExcel.getSheet("Рассылки")); i++) {
+            int id = Integer.valueOf(readFromExcel.getCellValue(i, readFromExcel.getCellId("ps id",
+                    readFromExcel.getSheet("Рассылки")), readFromExcel.getSheet("Рассылки")));
+
             if(psId == id) {
                 row = i;
                 break;

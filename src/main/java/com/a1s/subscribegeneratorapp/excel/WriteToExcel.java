@@ -1,4 +1,4 @@
-package com.a1s.subscribegeneratorapp.file;
+package com.a1s.subscribegeneratorapp.excel;
 
 import com.a1s.subscribegeneratorapp.config.ReadExcelProperties;
 import com.a1s.subscribegeneratorapp.model.ReportData;
@@ -19,8 +19,8 @@ import java.util.Date;
 import java.util.List;
 
 @Component()
-public class Write {
-    private static final Log logger = LogFactory.getLog(Write.class);
+public class WriteToExcel {
+    private static final Log logger = LogFactory.getLog(WriteToExcel.class);
     private XSSFWorkbook book;
     private XSSFSheet sheet;
     private String sheetName;
@@ -31,7 +31,7 @@ public class Write {
     @Autowired
     private CellStyle cellStyle;
 
-    public Write() {
+    public WriteToExcel() {
         sheetName = getDateWithHourAccuracy();
         book = new XSSFWorkbook();
         sheet = book.createSheet(sheetName);
@@ -64,7 +64,8 @@ public class Write {
      * @param rowNumber
      * @param data
      */
-    public void createRow(int rowNumber, ReportData data){
+    public void createRow(int rowNumber, ReportData data) {
+        logger.info("Started putting report into new excel.");
         List<String> columnName = readExcelProperties.getExcelList();
         XSSFRow row = sheet.createRow(rowNumber);
         for (int i = 0; i < columnName.size(); i++) {
@@ -104,6 +105,7 @@ public class Write {
                     break;
             }
         }
+        logger.info("Finished putting report into new excel, going to save document.");
         saveReport();
     }
 
@@ -116,8 +118,9 @@ public class Write {
             book.write(out);
             out.close();
             book.close();
+            logger.info("Report document is saved");
         } catch (FileNotFoundException e) {
-            logger.error("Can't find file", e);
+            logger.error("Can't find excel", e);
             e.printStackTrace();
         } catch (IOException e) {
             logger.error(e);

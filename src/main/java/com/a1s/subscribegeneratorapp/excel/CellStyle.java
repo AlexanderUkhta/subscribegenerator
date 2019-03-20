@@ -1,4 +1,4 @@
-package com.a1s.subscribegeneratorapp.file;
+package com.a1s.subscribegeneratorapp.excel;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;

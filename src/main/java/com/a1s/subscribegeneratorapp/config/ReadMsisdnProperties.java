@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
-@PropertySource("msisdn.properties")
+@PropertySource("classpath:msisdn.properties")
 @ConfigurationProperties(prefix = "app")
 public class ReadMsisdnProperties {
 

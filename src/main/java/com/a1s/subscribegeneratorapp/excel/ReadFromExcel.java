@@ -1,4 +1,4 @@
-package com.a1s.subscribegeneratorapp.file;
+package com.a1s.subscribegeneratorapp.excel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -15,9 +15,9 @@ import java.io.IOException;
 
 
 @Component()
-public class Read {
-    private static final Log logger = LogFactory.getLog(Read.class);
-    private static final String file = "src/main/resources/file.xlsx";
+public class ReadFromExcel {
+    private static final Log logger = LogFactory.getLog(ReadFromExcel.class);
+    private static final String file = "src/main/resources/excel.xlsx";
     private XSSFWorkbook book = getBook();
 
     /**
