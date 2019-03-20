@@ -23,6 +23,7 @@ public class ExcelReadService {
      */
     public Map<Integer, SubscribeRequestData> findAll() {
         logger.info("Started reading context from excel document.");
+
         Map<Integer, SubscribeRequestData> requestDataMap = new ConcurrentHashMap<>();
         for(int i = 1; i < readFromExcel.getLastRowId(readFromExcel.getSheet("Подключение")); i++) {
 
@@ -48,6 +49,7 @@ public class ExcelReadService {
                 requestDataMap.put(i, new SubscribeRequestData(i, psid, subscriptionName, shortNum, textRequest, welcomeNotification));
             }
         }
+
         logger.info("Finished reading context from excel document.");
         return requestDataMap;
     }
