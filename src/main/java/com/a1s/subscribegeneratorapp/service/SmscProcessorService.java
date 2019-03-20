@@ -41,6 +41,10 @@ public class SmscProcessorService {
         requestQueueService.setSmppSession(SYSTEM_ID);
     }
 
+    void stopSmsc() {
+        customSmppServer.stop();
+    }
+
     void makeRequestFromDataAndSend(final SubscribeRequestData dataForRequest) {
         Address destinationAddress = new Address((byte) 1, (byte) 1, dataForRequest.getShortNum());
         logger.info("Creating " + dataForRequest.getId() + "th deliver_sm, yet without msisdn...");

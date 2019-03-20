@@ -30,6 +30,7 @@ public class ContextProcessorService {
         logger.info("Got context map full, going to start SMSC...");
         CountDownLatch bindCompleted = new CountDownLatch(1);
         smscProcessorService.startSmsc(bindCompleted);
+
         try {
             bindCompleted.await(20, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
@@ -52,6 +53,9 @@ public class ContextProcessorService {
 
         logger.info("*** Start creating data report... ***");
         transactionReportService.makeFullDataReport();
+
+        smscProcessorService.stopSmsc();
+
     }
 
     public void setSubscribeRequestMap(final Map<Integer, SubscribeRequestData> requests) {

@@ -11,6 +11,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.xml.soap.SOAPConnectionFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,6 +28,8 @@ public class RequestQueueService {
     private TransactionReportService transactionReportService;
     @Autowired
     private ReadMsisdnProperties readMsisdnProperties;
+    @Autowired
+    private SOAPClientService soapClientService;
 
     private Map<String, MsisdnStateData> msisdnProcessMap = new ConcurrentHashMap<>();
     private DefaultSmppSession smppSession;
@@ -46,6 +49,8 @@ public class RequestQueueService {
 
         String currentFreeMsisdn = getNextFreeMsisdn();
         deliverSm.setSourceAddress(new Address((byte) 1, (byte) 1, currentFreeMsisdn));
+
+        soapClientService.unsubscribeAllForMsisdn(currentFreeMsisdn);
 
         try {
             smppSession.sendRequestPdu(deliverSm, TimeUnit.SECONDS.toMillis(60), false);
