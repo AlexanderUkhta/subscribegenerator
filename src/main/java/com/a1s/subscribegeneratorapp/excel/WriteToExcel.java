@@ -1,6 +1,6 @@
 package com.a1s.subscribegeneratorapp.excel;
 
-import com.a1s.subscribegeneratorapp.config.ReadExcelProperties;
+import com.a1s.subscribegeneratorapp.config.MsisdnAndExcelProperties;
 import com.a1s.subscribegeneratorapp.model.ReportData;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,7 +26,7 @@ public class WriteToExcel {
     private String sheetName;
 
     @Autowired
-    private ReadExcelProperties readExcelProperties;
+    private MsisdnAndExcelProperties msisdnAndExcelProperties;
 
     @Autowired
     private CellStyle cellStyle;
@@ -51,7 +51,7 @@ public class WriteToExcel {
      * Added generation of column names in the report.
      */
     private void createFirstRow() {
-        List<String> columnName = readExcelProperties.getExcelList();
+        List<String> columnName = msisdnAndExcelProperties.getExcelColumns();
         XSSFRow row = sheet.createRow(0);
         for (int i = 0; i < columnName.size(); i++) {
             XSSFCell cell = row.createCell(i);
@@ -66,7 +66,7 @@ public class WriteToExcel {
      */
     public void createRow(int rowNumber, ReportData data) {
         logger.info("Started putting report into new excel.");
-        List<String> columnName = readExcelProperties.getExcelList();
+        List<String> columnName = msisdnAndExcelProperties.getExcelColumns();
         XSSFRow row = sheet.createRow(rowNumber);
         for (int i = 0; i < columnName.size(); i++) {
             XSSFCell cell = row.createCell(i);

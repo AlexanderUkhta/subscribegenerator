@@ -1,6 +1,6 @@
 package com.a1s.subscribegeneratorapp.service;
 
-import com.a1s.subscribegeneratorapp.config.ReadMsisdnProperties;
+import com.a1s.subscribegeneratorapp.config.MsisdnAndExcelProperties;
 import com.a1s.subscribegeneratorapp.model.MsisdnStateData;
 import com.a1s.subscribegeneratorapp.smsc.CustomSmppServer;
 import com.cloudhopper.smpp.impl.DefaultSmppSession;
@@ -26,7 +26,7 @@ public class RequestQueueService {
     @Autowired
     private TransactionReportService transactionReportService;
     @Autowired
-    private ReadMsisdnProperties readMsisdnProperties;
+    private MsisdnAndExcelProperties msisdnAndExcelProperties;
     @Autowired
     private SOAPClientService soapClientService;
 
@@ -38,7 +38,8 @@ public class RequestQueueService {
 
         try {
             logger.info("Deliver_sm with transaction_id = " + transactionId + " is waiting for msisdn...");
-            ultimateWhile(this::hasNoFreeMsisdn, 60);
+            ultimateWhile(this::hasNoFreeMsisdn, 20);
+
         } catch (TimeoutException e) {
             logger.error("All msisdns are busy for too long, got current request failed. The next request " +
                     "will be processed", e);
@@ -53,8 +54,8 @@ public class RequestQueueService {
 
         try {
             smppSession.sendRequestPdu(deliverSm, TimeUnit.SECONDS.toMillis(60), false);
-            logger.info("*** " + transactionId +
-                    "th DeliverSm request is sent on " + currentFreeMsisdn + " ***");
+            logger.info(transactionId + "th deliver_sm request is sent from " + currentFreeMsisdn);
+
             msisdnProcessMap.put(currentFreeMsisdn, new MsisdnStateData(transactionId,
                     System.currentTimeMillis(), MSISDN_BUSY));
 
@@ -124,7 +125,7 @@ public class RequestQueueService {
     }
 
     void fillMsisdnMap() {
-        List<String> msisdnList = readMsisdnProperties.getMsisdnList();
+        List<String> msisdnList = msisdnAndExcelProperties.getMsisdnList();
         msisdnList.forEach(msisdn -> msisdnProcessMap
                 .put(msisdn, new MsisdnStateData(-1, -1, MSISDN_NOT_BUSY)));
         logger.info("Msisdn map is filled with " + msisdnProcessMap.size() + " pairs," +
@@ -134,6 +135,7 @@ public class RequestQueueService {
 
     public Map<String, MsisdnStateData> getMsisdnMap() {
         return msisdnProcessMap;
+
     }
 
     int getTransactionIdByMsisdn(final String msisdn) {
@@ -141,8 +143,8 @@ public class RequestQueueService {
 
     }
 
-    void setSmppSession(final String systemId) {
-        smppSession = (DefaultSmppSession) CustomSmppServer.getServerSession(systemId);
+    void setSmppSession() {
+        smppSession = (DefaultSmppSession) CustomSmppServer.getServerSession(SYSTEM_ID);
 
     }
 }

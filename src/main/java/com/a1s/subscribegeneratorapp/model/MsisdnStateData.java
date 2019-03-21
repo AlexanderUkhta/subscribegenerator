@@ -3,13 +3,13 @@ package com.a1s.subscribegeneratorapp.model;
 
 public class MsisdnStateData {
     private int currentTransactionId;
-    private long processingTime;
+    private long startTransactionTime;
     private int busyState;
 
 
-    public MsisdnStateData(int currentTransactionId, long processingTime, int busyState) {
+    public MsisdnStateData(int currentTransactionId, long startTransactionTime, int busyState) {
         this.currentTransactionId = currentTransactionId;
-        this.processingTime = processingTime;
+        this.startTransactionTime = startTransactionTime;
         this.busyState = busyState;
     }
 
@@ -17,8 +17,8 @@ public class MsisdnStateData {
         return currentTransactionId;
     }
 
-    public long getProcessingTime() {
-        return processingTime;
+    public long getStartTransactionTime() {
+        return startTransactionTime;
     }
 
     public int getBusyState() {

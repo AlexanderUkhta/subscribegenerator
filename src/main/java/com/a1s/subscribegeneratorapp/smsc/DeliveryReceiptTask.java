@@ -9,17 +9,25 @@ import com.cloudhopper.smpp.util.DeliveryReceipt;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 
-@Component
-class DeliveryReceiptTask {
+class DeliveryReceiptTask implements Runnable{
     private static final Logger logger = LoggerFactory.getLogger(DeliveryReceiptTask.class);
+    private SmppSession session;
+    private SubmitSm req;
+    private String messageId;
+    private String errorCode;
 
-    @Scheduled(fixedRate = 1000)
-    void createDeliveryReceipt(SmppSession smppSession, SubmitSm req, String messageId, String errorCode) {
+    DeliveryReceiptTask(SmppSession session, SubmitSm req, String messageId, String errorCode) {
+        this.session = session;
+        this.req = req;
+        this.messageId = messageId;
+        this.errorCode = errorCode;
+    }
+
+    @Override
+    public void run() {
         try {
             DeliverSm dsm = new DeliverSm();
 
@@ -43,8 +51,8 @@ class DeliveryReceiptTask {
             }
 
             receipt.setState(receiptState);
-            receipt.setSubmitCount(smppSession.getCounters().getRxSubmitSM().getRequest());
-            receipt.setDeliveredCount(smppSession.getCounters().getTxDeliverSM().getRequest());
+            receipt.setSubmitCount(session.getCounters().getRxSubmitSM().getRequest());
+            receipt.setDeliveredCount(session.getCounters().getTxDeliverSM().getRequest());
 
 
             String str = receipt.toShortMessage();
@@ -54,7 +62,7 @@ class DeliveryReceiptTask {
             dsm.setShortMessage(msgBuffer);
 
             logger.info("Sending delivery_receipt...");
-            smppSession.sendRequestPdu(dsm, TimeUnit.SECONDS.toMillis(60), false);
+            session.sendRequestPdu(dsm, TimeUnit.SECONDS.toMillis(60), false);
 
         } catch (Exception ex) {
             logger.error("{}", ex);

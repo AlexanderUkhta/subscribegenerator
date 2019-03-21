@@ -6,12 +6,14 @@ import com.cloudhopper.smpp.pdu.*;
 import com.cloudhopper.smpp.type.SmppChannelException;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import static com.a1s.ConfigurationConstantsAndMethods.SMPP_SERVER_PORT;
+import static com.a1s.ConfigurationConstantsAndMethods.SYSTEM_ID;
 import static com.a1s.ConfigurationConstantsAndMethods.ultimateWhile;
 
 @Component
@@ -23,6 +25,8 @@ public class CustomSmppServer extends DefaultSmppServer {
     static ConcurrentHashMap<Integer, DeliverSmResp> receivedDeliverSmResps = new ConcurrentHashMap<>();
 
     private static CountDownLatch bindCompleted;
+    private static SmppServerConfiguration smppServerConfiguration =
+            getBaseServerConfiguration(SMPP_SERVER_PORT, SYSTEM_ID);
 
     @Autowired
     private static CustomSmppSessionHandler customSmppSessionHandler;
@@ -38,8 +42,9 @@ public class CustomSmppServer extends DefaultSmppServer {
             }
     });
 
-    public CustomSmppServer(SmppServerConfiguration configuration, EventLoopGroup bossGroup, EventLoopGroup workerGroup) {
-        super(configuration, new CustomSmppServerHandler(), monitorExecutor, bossGroup, workerGroup);
+    public CustomSmppServer() {
+        super(smppServerConfiguration, new CustomSmppServerHandler(), monitorExecutor, new NioEventLoopGroup(),
+                new NioEventLoopGroup());
     }
 
 
@@ -54,7 +59,7 @@ public class CustomSmppServer extends DefaultSmppServer {
         logger.info("SMPP server started");
     }
 
-    public static SmppServerConfiguration getBaseServerConfiguration(Integer port, String systemID) {
+    private static SmppServerConfiguration getBaseServerConfiguration(Integer port, String systemID) {
         SmppServerConfiguration configuration = new SmppServerConfiguration();
 
         configuration.setPort(port);
@@ -80,7 +85,8 @@ public class CustomSmppServer extends DefaultSmppServer {
         ConcurrentHashMap<Long, SmppSessionHandler> sessionHandlers = new ConcurrentHashMap<>();
 
         @Override
-        public void sessionBindRequested(Long sessionId, SmppSessionConfiguration sessionConfiguration, final BaseBind bindRequest) {
+        public void sessionBindRequested(Long sessionId, SmppSessionConfiguration sessionConfiguration,
+                                         final BaseBind bindRequest) {
             // test name change of sessions
             // this name actually shows up as thread context...
             sessionConfiguration.setName("Application.SMPP." + sessionConfiguration.getSystemId());

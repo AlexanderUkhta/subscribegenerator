@@ -11,6 +11,7 @@ import com.cloudhopper.smpp.pdu.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 
 import java.lang.ref.WeakReference;
@@ -23,7 +24,7 @@ public class CustomSmppSessionHandler extends DefaultSmppSessionHandler {
     @Autowired
     private ConcatenationService concatenationService;
     @Autowired
-    private DeliveryReceiptTask deliveryReceiptTask;
+    private ThreadPoolTaskScheduler threadPoolTaskScheduler;
 
     private WeakReference<SmppSession> sessionRef;
     private long sessionId;
@@ -46,6 +47,7 @@ public class CustomSmppSessionHandler extends DefaultSmppSessionHandler {
             if (pduAsyncResponse.getResponse() instanceof DeliverSmResp) {
                 CustomSmppServer.receivedDeliverSmResps.put(deliverSmRespCounter.incrementAndGet(),
                         (DeliverSmResp) pduAsyncResponse.getResponse());
+
             }
 
         } catch (Exception e) {
@@ -103,8 +105,8 @@ public class CustomSmppSessionHandler extends DefaultSmppSessionHandler {
 
             if (((SubmitSm) pduRequest).getRegisteredDelivery() > 0) {
                 logger.info("Delivery_receipt needed, creating delivery_receipt after 1 second passed...");
-                deliveryReceiptTask.createDeliveryReceipt(
-                        session, (SubmitSm) pduRequest, resp.getMessageId(), "000");
+                threadPoolTaskScheduler.scheduleWithFixedDelay(new DeliveryReceiptTask(
+                        session, (SubmitSm) pduRequest, resp.getMessageId(), "000"), 1000);
 
             }
 

@@ -7,7 +7,6 @@ import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.pdu.DeliverSm;
 import com.cloudhopper.smpp.type.Address;
 import com.cloudhopper.smpp.type.SmppInvalidArgumentException;
-import io.netty.channel.nio.NioEventLoopGroup;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,21 +23,15 @@ public class SmscProcessorService {
     private RequestQueueService requestQueueService;
     @Autowired
     private TransactionReportService transactionReportService;
+    @Autowired
+    private CustomSmppServer customSmppServer;
 
     private DeliverSm currentReadyDeliverSm = new DeliverSm();
-
-    //todo make autowired and put this to lifecycle.start()
-    private CustomSmppServer customSmppServer;
-    {
-        customSmppServer = new CustomSmppServer(
-                CustomSmppServer.getBaseServerConfiguration(SMPP_SERVER_PORT, SYSTEM_ID), new NioEventLoopGroup(),
-                new NioEventLoopGroup());
-    }
 
     //todo remove?
     void startSmsc(CountDownLatch bindCompleted) {
         customSmppServer.startServerMain(bindCompleted);
-        requestQueueService.setSmppSession(SYSTEM_ID);
+        requestQueueService.setSmppSession();
     }
 
     void stopSmsc() {
