@@ -1,6 +1,5 @@
 package com.a1s.subscribegeneratorapp.controller;
 
-import com.a1s.subscribegeneratorapp.excel.ReadFromExcel;
 import com.a1s.subscribegeneratorapp.model.ReportData;
 import com.a1s.subscribegeneratorapp.model.SubscribeRequestData;
 import com.a1s.subscribegeneratorapp.service.ExcelCreateService;
@@ -26,8 +25,6 @@ public class MainController {
     private ExcelCreateService excelCreateService;
     @Autowired
     private ContextProcessorService contextProcessorService;
-    @Autowired
-    private ReadFromExcel readFromExcel;
 
     @RequestMapping(value = "/processData", method = RequestMethod.GET)
     public String processRequests(ModelMap model) {
@@ -44,6 +41,7 @@ public class MainController {
 
         Map<Integer, SubscribeRequestData> startMap = excelReadService.findAll();
         Map<Integer, ReportData> finishMap = new ConcurrentHashMap<>();
+
         startMap.forEach((id, subscribeRequestData) -> {
             if (id % 2 == 0) {
                 finishMap.put(id, new ReportData(id, subscribeRequestData.getResponseText(), subscribeRequestData));

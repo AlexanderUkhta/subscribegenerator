@@ -17,4 +17,5 @@ public class ReadMsisdnProperties {
     public List<String> getMsisdnList() {
         return this.msisdnList;
     }
+
 }

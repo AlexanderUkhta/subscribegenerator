@@ -10,6 +10,7 @@ public class ReportData {
         this.errorMessage = null;
         this.actualResponse = actualResponse;
         this.subscribeRequestData = subscribeRequestData;
+
     }
 
     public ReportData(int id, String errorMessage) {

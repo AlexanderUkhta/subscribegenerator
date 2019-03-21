@@ -11,7 +11,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.xml.soap.SOAPConnectionFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -117,6 +116,13 @@ public class RequestQueueService {
 
     }
 
+    public void processMsisdnTimeoutCase(final String msisdn) {
+        transactionReportService.processOneFailureReport(getTransactionIdByMsisdn(msisdn),
+                GOT_MSISDN_TIMEOUT_EXCEPTION + msisdn);
+        makeMsisdnNotBusy(msisdn);
+
+    }
+
     void fillMsisdnMap() {
         List<String> msisdnList = readMsisdnProperties.getMsisdnList();
         msisdnList.forEach(msisdn -> msisdnProcessMap
@@ -124,6 +130,10 @@ public class RequestQueueService {
         logger.info("Msisdn map is filled with " + msisdnProcessMap.size() + " pairs," +
                 " needed " + msisdnList.size() + "pairs");
 
+    }
+
+    public Map<String, MsisdnStateData> getMsisdnMap() {
+        return msisdnProcessMap;
     }
 
     int getTransactionIdByMsisdn(final String msisdn) {

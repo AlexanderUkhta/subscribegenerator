@@ -16,4 +16,5 @@ public class ReadExcelProperties {
     public List<String> getExcelList() {
         return this.excelList;
     }
+
 }

@@ -11,6 +11,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static com.a1s.ConfigurationConstantsAndMethods.stopMsisdnTimeoutService;
 import static com.a1s.ConfigurationConstantsAndMethods.ultimateWhile;
 
 @Service
@@ -25,11 +26,14 @@ public class ContextProcessorService {
     private RequestQueueService requestQueueService;
     @Autowired
     private TransactionReportService transactionReportService;
+    @Autowired
+    private MsisdnTimeoutService msisdnTimeoutService;
 
     public void process() {
         logger.info("Got context map full, going to start SMSC...");
         CountDownLatch bindCompleted = new CountDownLatch(1);
         smscProcessorService.startSmsc(bindCompleted);
+        msisdnTimeoutService.run();
 
         try {
             bindCompleted.await(20, TimeUnit.SECONDS);
@@ -51,10 +55,11 @@ public class ContextProcessorService {
             logger.warn("Can't get all transactions' results, going to make report on existing data");
         }
 
+        smscProcessorService.stopSmsc();
+        stopMsisdnTimeoutService.set(1);
+
         logger.info("*** Start creating data report... ***");
         transactionReportService.makeFullDataReport();
-
-        smscProcessorService.stopSmsc();
 
     }
 
