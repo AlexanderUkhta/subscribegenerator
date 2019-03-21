@@ -72,12 +72,22 @@ public class WriteToExcel {
             XSSFCell cell = row.createCell(i);
             switch(columnName.get(i)) {
                 case ("Название рассылки"):
-                case ("Короткий номер"):
-                case ("Текст сообщения"):
-                case ("Нотификация при подключении"):
-                case ("ps id"):
-                case ("Ожидаемый результат"):
                     cell.setCellValue(data.getSubscribeRequestData().getPsIdName());
+                    break;
+                case ("Короткий номер"):
+                    cell.setCellValue(data.getSubscribeRequestData().getShortNum());
+                    break;
+                case ("Текст сообщения"):
+                    cell.setCellValue(data.getSubscribeRequestData().getRequestText());
+                    break;
+                case ("Нотификация при подключении"):
+                    cell.setCellValue(data.getSubscribeRequestData().getResponseText());
+                    break;
+                case ("ps id"):
+                    cell.setCellValue(data.getSubscribeRequestData().getPsId());
+                    break;
+                case ("Ожидаемый результат"):
+                    cell.setCellValue(data.getSubscribeRequestData().getRequestText());
                     break;
                 case("Действительный результат"):
                     String actualResponse = data.getActualResponse();
