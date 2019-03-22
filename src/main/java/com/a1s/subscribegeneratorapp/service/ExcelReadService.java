@@ -16,6 +16,8 @@ public class ExcelReadService {
 
     @Autowired
     private ReadFromExcel readFromExcel;
+    @Autowired
+    private TransactionReportService reportService;
 
     /**
      * Fills map with objects consisting of id (row number), ps id, short number, request text, response text (welcome notification).
@@ -29,23 +31,21 @@ public class ExcelReadService {
 
             int psid = Integer.parseInt(readFromExcel.getCellValue(i, readFromExcel.getCellId("ps id",
                     readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение")));
+            String shortNum = readFromExcel.getCellValue(i, readFromExcel.getCellId("Короткий номер",
+                    readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение"));
 
-            if (psid == 0) {
-                logger.warn("Empty ps id in row " + i + 1);
+            String textRequest = readFromExcel.getCellValue(i, readFromExcel.getCellId("Текст сообщения",
+                    readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение"));
 
+            String welcomeNotification = readFromExcel.getCellValue(findRow(psid), readFromExcel.getCellId("Уведомление при подключении",
+                    readFromExcel.getSheet("Рассылки")), readFromExcel.getSheet("Рассылки"));
+
+            String subscriptionName = readFromExcel.getCellValue(findRow(psid), readFromExcel.getCellId("Название рассылки",
+                    readFromExcel.getSheet("Рассылки")), readFromExcel.getSheet("Рассылки"));
+            if(isInvalid(psid, shortNum, textRequest, welcomeNotification)) {
+                logger.warn("in row " + (i + 1) + ", check the required parameters: ps id, Короткий номер, Текст сообщения, Уведомление при подключении");
+                reportService.processOneFailureReport(i, "Check the required parameters in row " + (i + 1));
             } else {
-                String shortNum = readFromExcel.getCellValue(i, readFromExcel.getCellId("Короткий номер",
-                        readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение"));
-
-                String textRequest = readFromExcel.getCellValue(i, readFromExcel.getCellId("Текст сообщения",
-                        readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение"));
-
-                String welcomeNotification = readFromExcel.getCellValue(findRow(psid), readFromExcel.getCellId("Уведомление при подключении",
-                                readFromExcel.getSheet("Рассылки")), readFromExcel.getSheet("Рассылки"));
-
-                String subscriptionName = readFromExcel.getCellValue(findRow(psid), readFromExcel.getCellId("Название рассылки",
-                        readFromExcel.getSheet("Рассылки")), readFromExcel.getSheet("Рассылки"));
-
                 requestDataMap.put(i, new SubscribeRequestData(i, psid, subscriptionName, shortNum, textRequest, welcomeNotification));
             }
         }
@@ -72,5 +72,13 @@ public class ExcelReadService {
             }
         }
         return row;
+    }
+
+    private boolean isInvalid(int psid, String shortNum, String textRequest, String welcomeNotification) {
+        if(psid == 0 && shortNum.equals("0") && textRequest.equals("0") && welcomeNotification.equals("0")) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
