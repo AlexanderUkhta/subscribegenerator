@@ -24,7 +24,7 @@ public class ExcelCreateService {
             logger.info("Processing report data: " + counter);
         });
 
-        return 0;
+        return counter;
     }
 
     /*private void makeErrorReport(Object... objects) {

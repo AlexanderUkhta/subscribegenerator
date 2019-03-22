@@ -43,9 +43,10 @@ public class MainController {
         Map<Integer, ReportData> finishMap = new ConcurrentHashMap<>();
 
         startMap.forEach((id, subscribeRequestData) -> {
-            if (id % 2 == 0) {
-                finishMap.put(id, new ReportData(id, subscribeRequestData.getResponseText(), subscribeRequestData));
-            } else finishMap.put(id, new ReportData(id, "oIIIibo4ka"));
+//            if (id % 2 == 0) {
+//                finishMap.put(id, new ReportData(id, subscribeRequestData.getResponseText(), subscribeRequestData));
+//            } else finishMap.put(id, new ReportData(id, "oIIIibo4ka"));
+            finishMap.put(id, new ReportData(id, subscribeRequestData.getResponseText(), subscribeRequestData));
         });
 
         int processedAtAll = excelCreateService.makeFullDataReport(new TreeMap<>(finishMap));

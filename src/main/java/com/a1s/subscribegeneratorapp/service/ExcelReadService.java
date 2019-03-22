@@ -1,6 +1,7 @@
 package com.a1s.subscribegeneratorapp.service;
 
 import com.a1s.subscribegeneratorapp.excel.ReadFromExcel;
+import com.a1s.subscribegeneratorapp.model.ReportData;
 import com.a1s.subscribegeneratorapp.model.SubscribeRequestData;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -89,3 +90,13 @@ public class ExcelReadService {
         }
     }
 }
+//    public int makeFullDataReport(final Map<Integer, ReportData> reportDataTreeMap) {
+//        int counter = 0;
+//        writeToExcel.createFirstRow();
+//        reportDataTreeMap.forEach((transactionId, reportData) -> {
+//            writeToExcel.createRow(transactionId, reportData);
+//            logger.info("Processing report data: " + counter);
+//        });
+//
+//        return counter;
+//    }

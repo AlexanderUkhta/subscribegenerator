@@ -9,7 +9,6 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;
@@ -115,7 +114,6 @@ public class WriteToExcel {
                     break;
             }
         }
-        logger.info("Finished putting report into new excel, going to save document.");
         saveReport();
     }
 
