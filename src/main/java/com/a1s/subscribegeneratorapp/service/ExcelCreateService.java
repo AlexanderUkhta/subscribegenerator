@@ -18,10 +18,10 @@ public class ExcelCreateService {
 
     public int makeFullDataReport(final Map<Integer, ReportData> reportDataTreeMap) {
         writeToExcel.createFirstRow();
-        writeToExcel.writeMap(reportDataTreeMap);
+        int counter = writeToExcel.writeMap(reportDataTreeMap);
         logger.info("Processing report data");
 
-        return 0;
+        return counter;
     }
 
     /*private void makeErrorReport(Object... objects) {
