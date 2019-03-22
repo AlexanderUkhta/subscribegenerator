@@ -14,10 +14,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 
-@Component()
+@Component
 public class ReadFromExcel {
     private static final Log logger = LogFactory.getLog(ReadFromExcel.class);
-    private static final String file = "src/main/resources/excel.xlsx";
+    private static final String file = "src/main/resources/file.xlsx";
     private XSSFWorkbook book = getBook();
 
     /**

@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+
 import static com.a1s.ConfigurationConstantsAndMethods.SMPP_SERVER_PORT;
 import static com.a1s.ConfigurationConstantsAndMethods.SYSTEM_ID;
 import static com.a1s.ConfigurationConstantsAndMethods.ultimateWhile;
@@ -27,9 +29,16 @@ public class CustomSmppServer extends DefaultSmppServer {
     private static CountDownLatch bindCompleted;
     private static SmppServerConfiguration smppServerConfiguration =
             getBaseServerConfiguration(SMPP_SERVER_PORT, SYSTEM_ID);
+    private static CustomSmppSessionHandler customSmppSessionHandler;
 
     @Autowired
-    private static CustomSmppSessionHandler customSmppSessionHandler;
+    private CustomSmppSessionHandler tmpCustomSmppSessionHandler;
+
+    @PostConstruct
+    public void init() {
+        customSmppSessionHandler = tmpCustomSmppSessionHandler;
+    }
+
 
     private static ScheduledThreadPoolExecutor monitorExecutor =
         (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1, new ThreadFactory() {
@@ -50,6 +59,7 @@ public class CustomSmppServer extends DefaultSmppServer {
 
     public void startServerMain(CountDownLatch bindCompleted) {
         CustomSmppServer.bindCompleted = bindCompleted;
+
         logger.info("Starting SMPP server...");
         try {
             this.start();
@@ -98,6 +108,7 @@ public class CustomSmppServer extends DefaultSmppServer {
             logger.info("Session created: {}", session);
 
             // static session_handler is used, if more than 1 session on a server - it needs being refactored
+            customSmppSessionHandler.setSessionRef(session);
             session.serverReady(customSmppSessionHandler);
             customSmppSessionHandler.setSessionId(sessionId);
             sessionHandlers.put(sessionId, customSmppSessionHandler);

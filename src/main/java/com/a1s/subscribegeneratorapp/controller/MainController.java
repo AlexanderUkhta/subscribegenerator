@@ -36,7 +36,7 @@ public class MainController {
         return "process";
     }
 
-    @RequestMapping(value = "/testExcelReadService", method = RequestMethod.GET)
+    @RequestMapping(value = "/testExcel", method = RequestMethod.GET)
     public String showContext(ModelMap model) {
 
         Map<Integer, SubscribeRequestData> startMap = excelReadService.findAll();

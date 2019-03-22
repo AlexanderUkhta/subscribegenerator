@@ -2,12 +2,10 @@ package com.a1s.subscribegeneratorapp.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 
 import java.util.List;
 
 @Configuration
-@PropertySource("classpath:msisdn_excel.properties")
 @ConfigurationProperties(prefix = "app")
 public class MsisdnAndExcelProperties {
 

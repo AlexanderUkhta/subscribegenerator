@@ -9,6 +9,7 @@ import com.cloudhopper.smpp.type.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.concurrent.TimeoutException;
 import static com.a1s.ConfigurationConstantsAndMethods.*;
 
 @Service
+@ComponentScan(value = "com.a1s.subscribegeneratorapp")
 public class RequestQueueService {
     private static final Log logger = LogFactory.getLog(RequestQueueService.class);
 

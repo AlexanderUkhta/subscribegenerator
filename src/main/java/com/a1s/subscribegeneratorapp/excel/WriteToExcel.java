@@ -9,6 +9,7 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;
@@ -18,7 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-@Component()
+@Component
 public class WriteToExcel {
     private static final Log logger = LogFactory.getLog(WriteToExcel.class);
     private XSSFWorkbook book;
@@ -35,7 +36,6 @@ public class WriteToExcel {
         sheetName = getDateWithHourAccuracy();
         book = new XSSFWorkbook();
         sheet = book.createSheet(sheetName);
-        createFirstRow();
     }
 
     /**
@@ -50,7 +50,7 @@ public class WriteToExcel {
     /**
      * Added generation of column names in the report.
      */
-    private void createFirstRow() {
+    public void createFirstRow() {
         List<String> columnName = msisdnAndExcelProperties.getExcelColumns();
         XSSFRow row = sheet.createRow(0);
         for (int i = 0; i < columnName.size(); i++) {
@@ -87,7 +87,7 @@ public class WriteToExcel {
                     cell.setCellValue(data.getSubscribeRequestData().getPsId());
                     break;
                 case ("Ожидаемый результат"):
-                    cell.setCellValue(data.getSubscribeRequestData().getRequestText());
+                    cell.setCellValue(data.getSubscribeRequestData().getResponseText());
                     break;
                 case("Действительный результат"):
                     String actualResponse = data.getActualResponse();

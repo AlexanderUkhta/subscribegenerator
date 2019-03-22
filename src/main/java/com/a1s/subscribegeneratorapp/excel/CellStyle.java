@@ -6,7 +6,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("cellStyle")
 public class CellStyle {
     /**
      * Adds comments to cells

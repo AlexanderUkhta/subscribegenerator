@@ -33,7 +33,7 @@ public class CustomSmppSessionHandler extends DefaultSmppSessionHandler {
     private AtomicInteger requestSubmitSmCounter = new AtomicInteger(0);
     private AtomicInteger deliverSmRespCounter = new AtomicInteger(0);
 
-    CustomSmppSessionHandler(SmppServerSession session) {
+    void setSessionRef(SmppServerSession session) {
         this.sessionRef = new WeakReference<>(session);
     }
 
