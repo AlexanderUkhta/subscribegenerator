@@ -17,12 +17,9 @@ public class ExcelCreateService {
     private WriteToExcel writeToExcel;
 
     public int makeFullDataReport(final Map<Integer, ReportData> reportDataTreeMap) {
-        int counter = 0;
         writeToExcel.createFirstRow();
-        reportDataTreeMap.forEach((transactionId, reportData) -> {
-            writeToExcel.createRow(transactionId, reportData);
-            logger.info("Processing report data: " + counter);
-        });
+        int counter = writeToExcel.writeMap(reportDataTreeMap);
+        logger.info("Processing report data");
 
         return counter;
     }
