@@ -48,8 +48,9 @@ public class MainController {
             } else finishMap.put(id, new ReportData(id, "oIIIibo4ka"));
         });
 
-        excelCreateService.makeFullDataReport(new TreeMap<>(finishMap));
+        int processedAtAll = excelCreateService.makeFullDataReport(new TreeMap<>(finishMap));
 
+        model.addAttribute("message", processedAtAll);
         return "test";
     }
 }

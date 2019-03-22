@@ -16,13 +16,15 @@ public class ExcelCreateService {
     @Autowired
     private WriteToExcel writeToExcel;
 
-    public void makeFullDataReport(final Map<Integer, ReportData> reportDataTreeMap) {
+    public int makeFullDataReport(final Map<Integer, ReportData> reportDataTreeMap) {
         int counter = 0;
+        writeToExcel.createFirstRow();
         reportDataTreeMap.forEach((transactionId, reportData) -> {
-            writeToExcel.createFirstRow();
             writeToExcel.createRow(transactionId, reportData);
             logger.info("Processing report data: " + counter);
         });
+
+        return 0;
     }
 
     /*private void makeErrorReport(Object... objects) {
