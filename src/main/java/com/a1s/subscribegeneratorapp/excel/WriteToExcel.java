@@ -2,14 +2,15 @@ package com.a1s.subscribegeneratorapp.excel;
 
 import com.a1s.subscribegeneratorapp.config.MsisdnAndExcelProperties;
 import com.a1s.subscribegeneratorapp.model.ReportData;
+import com.a1s.subscribegeneratorapp.model.SubscribeRequestData;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;
@@ -18,6 +19,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class WriteToExcel {
@@ -61,62 +64,75 @@ public class WriteToExcel {
 
     /**
      * Creates a row in the report and fills it with data from the ReportData
-     * @param rowNumber
-     * @param data
+     * @param reportDataMap
      */
-    public void createRow(int rowNumber, ReportData data) {
-        logger.info("Started putting report into new excel.");
+    public int createRow(Map<Integer, ReportData> reportDataMap) {
+        AtomicInteger counter = new AtomicInteger();
         List<String> columnName = msisdnAndExcelProperties.getExcelColumns();
-        XSSFRow row = sheet.createRow(rowNumber);
-        for (int i = 0; i < columnName.size(); i++) {
-            XSSFCell cell = row.createCell(i);
-            switch(columnName.get(i)) {
-                case ("Название рассылки"):
-                    cell.setCellValue(data.getSubscribeRequestData().getPsIdName());
-                    break;
-                case ("Короткий номер"):
-                    cell.setCellValue(data.getSubscribeRequestData().getShortNum());
-                    break;
-                case ("Текст сообщения"):
-                    cell.setCellValue(data.getSubscribeRequestData().getRequestText());
-                    break;
-                case ("Нотификация при подключении"):
-                    cell.setCellValue(data.getSubscribeRequestData().getResponseText());
-                    break;
-                case ("ps id"):
-                    cell.setCellValue(data.getSubscribeRequestData().getPsId());
-                    break;
-                case ("Ожидаемый результат"):
-                    cell.setCellValue(data.getSubscribeRequestData().getResponseText());
-                    break;
-                case("Действительный результат"):
-                    String actualResponse = data.getActualResponse();
-                    String expectedResult = data.getSubscribeRequestData().getResponseText();
-                    cell.setCellValue(data.getActualResponse());
-                    XSSFCell expectedCell = row.getCell(i-2);
-                    if(actualResponse.equals(expectedResult)) {
-                        cell.setCellStyle(cellStyle.greenBorderCell(book));
-                        expectedCell.setCellStyle(cellStyle.greenBorderCell(book));
-                    } else {
-                        cell.setCellStyle(cellStyle.redBorderCell(book));
-                        expectedCell.setCellStyle(cellStyle.redBorderCell(book));
-                    }
-                    break;
-                case ("Ошибка"):
-                    String errorMessage = data.getErrorMessage();
-                    if(errorMessage != null) {
-                        cell.setCellValue(data.getErrorMessage());
-                        cell.setCellStyle(cellStyle.redBorderCell(book));
-                        XSSFCell responseCell = row.getCell(i-1);
-                        responseCell.setCellStyle(cellStyle.redBorderCell(book));
-                        XSSFCell expectedResponse = row.getCell(i-2);
-                        expectedResponse.setCellStyle(cellStyle.redBorderCell(book));
-                    }
-                    break;
-            }
+        logger.info("Started putting report into new excel.");
+        try {
+            reportDataMap.forEach((transactionId, reportData) -> {
+                logger.info("Processing report data: " + counter.getAndIncrement());
+                XSSFRow row = sheet.createRow(transactionId);
+                for (int i = 0; i <= columnName.size(); i++) {
+                    createCell(row, i, reportData);
+                }
+            });
+        } finally {
+            logger.info("Finished putting report into new excel, going to save document.");
+            saveReport();
         }
-        logger.info("Finished putting report into new excel, going to save document.");
-        saveReport();
+        return counter.get();
+    }
+
+    private void createCell(XSSFRow row, int cellId, ReportData data) {
+        XSSFCell cell = row.createCell(cellId, CellType.STRING);
+        List<String> columnName = msisdnAndExcelProperties.getExcelColumns();
+        switch(columnName.get(cellId)) {
+            case ("Название рассылки"):
+                cell.setCellValue(data.getSubscribeRequestData().getPsIdName());
+                break;
+            case ("Короткий номер"):
+                cell.setCellValue(data.getSubscribeRequestData().getShortNum());
+                break;
+            case ("Текст сообщения"):
+                cell.setCellValue(data.getSubscribeRequestData().getRequestText());
+                break;
+            case ("Нотификация при подключении"):
+                cell.setCellValue(data.getSubscribeRequestData().getResponseText());
+                break;
+            case ("ps id"):
+                cell.setCellValue(String.valueOf(data.getSubscribeRequestData().getPsId()));
+                break;
+            case ("Ожидаемый результат"):
+                cell.setCellValue(data.getSubscribeRequestData().getResponseText());
+                break;
+            case("Действительный результат"):
+                String actualResponse = data.getActualResponse();
+                String expectedResult = data.getSubscribeRequestData().getResponseText();
+                cell.setCellValue(data.getActualResponse());
+                XSSFCell expectedCell = row.getCell(cellId-2);
+                if(actualResponse.equals(expectedResult)) {
+                    cell.setCellStyle(cellStyle.greenBorderCell(book));
+                    expectedCell.setCellStyle(cellStyle.greenBorderCell(book));
+                } else {
+                    cell.setCellStyle(cellStyle.redBorderCell(book));
+                    expectedCell.setCellStyle(cellStyle.redBorderCell(book));
+                }
+                break;
+            case ("Ошибка"):
+                String errorMessage = data.getErrorMessage();
+                if(errorMessage != null) {
+                    cell.setCellValue(data.getErrorMessage());
+                    cell.setCellStyle(cellStyle.redBorderCell(book));
+                    XSSFCell responseCell = row.getCell(cellId-1);
+                    responseCell.setCellStyle(cellStyle.redBorderCell(book));
+                    XSSFCell expectedResponse = row.getCell(cellId-2);
+                    expectedResponse.setCellStyle(cellStyle.redBorderCell(book));
+                }
+                break;
+        }
+
     }
 
     /**
