@@ -1,7 +1,6 @@
 package com.a1s.subscribegeneratorapp.service;
 
 import com.a1s.subscribegeneratorapp.excel.ReadFromExcel;
-import com.a1s.subscribegeneratorapp.model.ReportData;
 import com.a1s.subscribegeneratorapp.model.SubscribeRequestData;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,7 +17,7 @@ public class ExcelReadService {
     @Autowired
     private ReadFromExcel readFromExcel;
     @Autowired
-    private TransactionReportService reportService;
+    private TransactionReportService transactionReportService;
 
     /**
      * Fills map with objects consisting of id (row number), ps id, short number, request text, response text (welcome notification).
@@ -35,7 +34,7 @@ public class ExcelReadService {
 
             if(psid == 0) {
                 logger.warn("in row " + (i + 1) + ", check the required parameter ps id");
-                reportService.processOneFailureReport(i, "Check the required parameters in row " + (i + 1));
+                transactionReportService.processOneFailureReport(i, "Check the required parameters in row " + (i + 1));
 
             } else {
                 String shortNum = readFromExcel.getCellValue(i, readFromExcel.getCellId("Короткий номер",
@@ -52,7 +51,7 @@ public class ExcelReadService {
 
                 if(isInvalid(shortNum, textRequest, welcomeNotification)) {
                     logger.warn("in row " + (i + 1) + ", check the required parameters: ps id, Короткий номер, Текст сообщения, Уведомление при подключении");
-                    reportService.processOneFailureReport(i, "Check the required parameters in row " + (i + 1));
+                    transactionReportService.processOneFailureReport(i, "Check the required parameters in row " + (i + 1));
 
                 } else {
                     requestDataMap.put(i, new SubscribeRequestData(i, psid, subscriptionName, shortNum, textRequest, welcomeNotification));
