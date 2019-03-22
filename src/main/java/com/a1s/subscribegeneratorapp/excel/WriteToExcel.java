@@ -66,7 +66,7 @@ public class WriteToExcel {
      * Creates a row in the report and fills it with data from the ReportData
      * @param reportDataMap
      */
-    public int createRow(Map<Integer, ReportData> reportDataMap) {
+    public int writeMap(Map<Integer, ReportData> reportDataMap) {
         AtomicInteger counter = new AtomicInteger();
         List<String> columnName = msisdnAndExcelProperties.getExcelColumns();
         logger.info("Started putting report into new excel.");

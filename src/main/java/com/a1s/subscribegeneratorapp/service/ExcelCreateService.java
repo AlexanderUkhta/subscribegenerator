@@ -18,7 +18,7 @@ public class ExcelCreateService {
 
     public int makeFullDataReport(final Map<Integer, ReportData> reportDataTreeMap) {
         writeToExcel.createFirstRow();
-        writeToExcel.createRow(reportDataTreeMap);
+        writeToExcel.writeMap(reportDataTreeMap);
         logger.info("Processing report data");
 
         return 0;
