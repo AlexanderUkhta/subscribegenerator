@@ -2,7 +2,6 @@ package com.a1s.subscribegeneratorapp.excel;
 
 import com.a1s.subscribegeneratorapp.config.MsisdnAndExcelProperties;
 import com.a1s.subscribegeneratorapp.model.ReportData;
-import com.a1s.subscribegeneratorapp.model.SubscribeRequestData;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.ss.usermodel.CellType;
@@ -66,22 +65,23 @@ public class WriteToExcel {
      * Creates a row in the report and fills it with data from the ReportData
      * @param reportDataMap
      */
-    public int writeMap(Map<Integer, ReportData> reportDataMap) {
+    public int writeMap(final Map<Integer, ReportData> reportDataMap) {
         AtomicInteger counter = new AtomicInteger();
         List<String> columnName = msisdnAndExcelProperties.getExcelColumns();
         logger.info("Started putting report into new excel.");
         try {
             reportDataMap.forEach((transactionId, reportData) -> {
-                logger.info("Processing report data: " + counter.getAndIncrement());
+                logger.info("Processing report data: " + counter.incrementAndGet());
                 XSSFRow row = sheet.createRow(transactionId);
-                for (int i = 0; i <= columnName.size(); i++) {
+                for (int i = 0; i < columnName.size(); i++) {
                     createCell(row, i, reportData);
                 }
             });
-        } finally {
+        } finally { //todo работать не будеть
             logger.info("Finished putting report into new excel, going to save document.");
             saveReport();
         }
+
         return counter.get();
     }
 
@@ -133,7 +133,7 @@ public class WriteToExcel {
                 break;
         }
 
-        saveReport();
+//        saveReport();
 
     }
 

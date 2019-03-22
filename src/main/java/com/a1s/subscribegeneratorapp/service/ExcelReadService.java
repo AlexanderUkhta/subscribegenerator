@@ -28,12 +28,16 @@ public class ExcelReadService {
         logger.info("Started reading context from excel document.");
 
         Map<Integer, SubscribeRequestData> requestDataMap = new ConcurrentHashMap<>();
-        for(int i = 1; i < readFromExcel.getLastRowId(readFromExcel.getSheet("Подключение")); i++) {
+        for(int i = 1; i < readFromExcel.getLastRowId(readFromExcel.getSheet("Подключение")); i++) { //todo maybe <= ?
 
             int psid = Integer.parseInt(readFromExcel.getCellValue(i, readFromExcel.getCellId("ps id",
                     readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение")));
 
-            if(psid != 0) {
+            if(psid == 0) {
+                logger.warn("in row " + (i + 1) + ", check the required parameter ps id");
+                reportService.processOneFailureReport(i, "Check the required parameters in row " + (i + 1));
+
+            } else {
                 String shortNum = readFromExcel.getCellValue(i, readFromExcel.getCellId("Короткий номер",
                         readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение"));
 
@@ -49,12 +53,11 @@ public class ExcelReadService {
                 if(isInvalid(shortNum, textRequest, welcomeNotification)) {
                     logger.warn("in row " + (i + 1) + ", check the required parameters: ps id, Короткий номер, Текст сообщения, Уведомление при подключении");
                     reportService.processOneFailureReport(i, "Check the required parameters in row " + (i + 1));
+
                 } else {
                     requestDataMap.put(i, new SubscribeRequestData(i, psid, subscriptionName, shortNum, textRequest, welcomeNotification));
                 }
-            } else {
-                logger.warn("in row " + (i + 1) + ", check the required parameter ps id");
-                reportService.processOneFailureReport(i, "Check the required parameters in row " + (i + 1));
+
             }
         }
 
@@ -83,11 +86,12 @@ public class ExcelReadService {
     }
 
     private boolean isInvalid(String shortNum, String textRequest, String welcomeNotification) {
-        if(shortNum.equals("0") && textRequest.equals("0") && welcomeNotification.equals("0")) {
-            return true;
-        } else {
-            return false;
-        }
+//        if(shortNum.equals("0") && textRequest.equals("0") && welcomeNotification.equals("0")) {
+//            return true;
+//        } else {
+//            return false;
+//        }
+        return shortNum.equals("0") && textRequest.equals("0") && welcomeNotification.equals("0");
     }
 }
 //    public int makeFullDataReport(final Map<Integer, ReportData> reportDataTreeMap) {
