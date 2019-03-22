@@ -37,16 +37,16 @@ public class ExcelReadService {
                 transactionReportService.processOneFailureReport(i, "Check the required parameters in row " + (i + 1));
 
             } else {
-                String shortNum = readFromExcel.getCellValue(i, readFromExcel.getCellId("Короткий номер",
+                String shortNum = readFromExcel.getCellValue(i, readFromExcel.getCellId("short num",
                         readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение"));
 
-                String textRequest = readFromExcel.getCellValue(i, readFromExcel.getCellId("Текст сообщения",
+                String textRequest = readFromExcel.getCellValue(i, readFromExcel.getCellId("text request",
                         readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение"));
 
-                String welcomeNotification = readFromExcel.getCellValue(findRow(psid), readFromExcel.getCellId("Уведомление при подключении",
+                String welcomeNotification = readFromExcel.getCellValue(findRow(psid), readFromExcel.getCellId("welcome notification",
                         readFromExcel.getSheet("Рассылки")), readFromExcel.getSheet("Рассылки"));
 
-                String subscriptionName = readFromExcel.getCellValue(findRow(psid), readFromExcel.getCellId("Название рассылки",
+                String subscriptionName = readFromExcel.getCellValue(findRow(psid), readFromExcel.getCellId("subscribe name",
                         readFromExcel.getSheet("Рассылки")), readFromExcel.getSheet("Рассылки"));
 
                 if(isInvalid(shortNum, textRequest, welcomeNotification)) {
