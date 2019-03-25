@@ -20,7 +20,6 @@ public class MsisdnAndExcelProperties {
         return this.msisdns;
 
     }
-
     public void setExcelColumns(List<String> excelColumns) {
         this.excelColumns = excelColumns;
 
@@ -29,6 +28,5 @@ public class MsisdnAndExcelProperties {
         return this.excelColumns;
 
     }
-
 
 }

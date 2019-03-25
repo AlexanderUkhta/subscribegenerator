@@ -2,6 +2,7 @@ package com.a1s.subscribegeneratorapp.excel;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
@@ -44,14 +45,19 @@ public class CellStyle {
     }
 
     /**
-     * Changes the cell background color to yellow.
+     * Changes the cell background color to grey, makes font italic.
      * @param book
      * @return
      */
-    public XSSFCellStyle yellowBorderCell(XSSFWorkbook book) {
+    public XSSFCellStyle greyBorderAndItalicFont(XSSFWorkbook book) {
         XSSFCellStyle backgroundStyle = book.createCellStyle();
-        backgroundStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+        backgroundStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
         backgroundStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+        XSSFFont font = book.createFont();
+        font.setFontHeightInPoints((short) 10);
+        font.setItalic(true);
+        backgroundStyle.setFont(font);
         return backgroundStyle;
     }
 
@@ -62,8 +68,9 @@ public class CellStyle {
      */
     public XSSFCellStyle redBorderCell(XSSFWorkbook book) {
         XSSFCellStyle backgroundStyle = book.createCellStyle();
-        backgroundStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
+        backgroundStyle.setFillForegroundColor(IndexedColors.RED1.getIndex());
         backgroundStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         return backgroundStyle;
     }
+
 }

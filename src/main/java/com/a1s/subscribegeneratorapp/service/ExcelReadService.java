@@ -50,7 +50,7 @@ public class ExcelReadService {
                         readFromExcel.getSheet("Рассылки")), readFromExcel.getSheet("Рассылки"));
 
                 if(isInvalid(shortNum, textRequest, welcomeNotification)) {
-                    logger.warn("in row " + (i + 1) + ", check the required parameters: ps id, Короткий номер, Текст сообщения, Уведомление при подключении");
+                    logger.warn("in row " + (i + 1) + ", check the required parameters: ps id, short_num, text request, welcome notification");
                     transactionReportService.processOneFailureReport(i, "Check the required parameters in row " + (i + 1));
 
                 } else {
