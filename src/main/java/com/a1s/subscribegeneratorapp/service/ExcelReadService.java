@@ -10,6 +10,10 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Service, that reads required columns from initial excel document.
+ * Makes subscribeRequestData from read data. This subscribeRequestData is then used to make proper subscribe requests.
+ */
 @Service
 public class ExcelReadService {
     private static final Log logger = LogFactory.getLog(ExcelReadService.class);
@@ -20,44 +24,46 @@ public class ExcelReadService {
     private TransactionReportService transactionReportService;
 
     /**
-     * Fills map with objects consisting of id (row number), ps id, short number, request text, response text (welcome notification).
-     * @return
+     * Gets required text from excel document and fills requestDataMap with objects consisting of
+     * id(row_number), ps_id, ps_id_name, short_num, request_text, response_text(welcome_notification).
+     * @return map with subscribeRequestData
      */
     public Map<Integer, SubscribeRequestData> findAll() {
         logger.info("Started reading context from excel document.");
 
         Map<Integer, SubscribeRequestData> requestDataMap = new ConcurrentHashMap<>();
-        for(int i = 1; i < readFromExcel.getLastRowId(readFromExcel.getSheet("Подключение")); i++) { //todo maybe <= ?
+        for(int i = 1; i <= readFromExcel.getLastRowId(readFromExcel.getSheet("Подключение")); i++) {
 
             int psid = Integer.parseInt(readFromExcel.getCellValue(i, readFromExcel.getCellId("ps id",
                     readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение")));
 
             if(psid == 0) {
-                logger.warn("in row " + (i + 1) + ", check the required parameter ps id");
+                logger.warn("In row " + (i + 1) + ", check the required parameter ps_id");
                 transactionReportService.processOneFailureReport(i, "Check the required parameters in row " + (i + 1));
 
             } else {
-                String shortNum = readFromExcel.getCellValue(i, readFromExcel.getCellId("short num",
+                String shortNum = readFromExcel.getCellValue(i, readFromExcel.getCellId("Короткий номер",
                         readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение"));
 
-                String textRequest = readFromExcel.getCellValue(i, readFromExcel.getCellId("text request",
+                String textRequest = readFromExcel.getCellValue(i, readFromExcel.getCellId("Текст сообщения",
                         readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение"));
 
-                String welcomeNotification = readFromExcel.getCellValue(findRow(psid), readFromExcel.getCellId("welcome notification",
+                String welcomeNotification = readFromExcel.getCellValue(findRow(psid), readFromExcel.getCellId("Нотификация при подключении",
                         readFromExcel.getSheet("Рассылки")), readFromExcel.getSheet("Рассылки"));
 
-                String subscriptionName = readFromExcel.getCellValue(findRow(psid), readFromExcel.getCellId("subscribe name",
+                String subscriptionName = readFromExcel.getCellValue(findRow(psid), readFromExcel.getCellId("Название рассылки",
                         readFromExcel.getSheet("Рассылки")), readFromExcel.getSheet("Рассылки"));
 
-                if(isInvalid(shortNum, textRequest, welcomeNotification)) {
-                    logger.warn("in row " + (i + 1) + ", check the required parameters: ps id, short_num, text request, welcome notification");
+                if(areInvalid(shortNum, textRequest, welcomeNotification)) {
+                    logger.warn("In row " + (i + 1) + ", check the required parameters: ps_id, short_num, request_text, welcome_notification");
                     transactionReportService.processOneFailureReport(i, "Check the required parameters in row " + (i + 1));
 
                 } else {
                     requestDataMap.put(i, new SubscribeRequestData(i, psid, subscriptionName, shortNum, textRequest, welcomeNotification));
+                    logger.info("Successfully processed row " + (i + 1));
                 }
-
             }
+
         }
 
         logger.info("Finished reading context from excel document.");
@@ -65,14 +71,14 @@ public class ExcelReadService {
     }
 
     /**
-     * Get row number from subscription page
+     * Get row number from subscription page by psId.
      * @param psId
-     * @return
+     * @return the number of row with given psId
      */
     private int findRow(final int psId) {
         int row = 0;
 
-        for (int i = 1; i < readFromExcel.getLastRowId(readFromExcel.getSheet("Рассылки")); i++) {
+        for (int i = 1; i <= readFromExcel.getLastRowId(readFromExcel.getSheet("Рассылки")); i++) {
             int id = Integer.valueOf(readFromExcel.getCellValue(i, readFromExcel.getCellId("ps id",
                     readFromExcel.getSheet("Рассылки")), readFromExcel.getSheet("Рассылки")));
 
@@ -84,22 +90,14 @@ public class ExcelReadService {
         return row;
     }
 
-    private boolean isInvalid(String shortNum, String textRequest, String welcomeNotification) {
-//        if(shortNum.equals("0") && textRequest.equals("0") && welcomeNotification.equals("0")) {
-//            return true;
-//        } else {
-//            return false;
-//        }
-        return shortNum.equals("0") && textRequest.equals("0") && welcomeNotification.equals("0");
+    /**
+     * Returns true if one of three input parameters is invalid(set to '0').
+     * @param shortNum short_num of current row
+     * @param textRequest text_request of current row
+     * @param welcomeNotification welcome_notification from current row
+     * @return true or false
+     */
+    private boolean areInvalid(String shortNum, String textRequest, String welcomeNotification) {
+        return shortNum.equals("0") || textRequest.equals("0") || welcomeNotification.equals("0");
     }
 }
-//    public int makeFullDataReport(final Map<Integer, ReportData> reportDataTreeMap) {
-//        int counter = 0;
-//        writeToExcel.createFirstRow();
-//        reportDataTreeMap.forEach((transactionId, reportData) -> {
-//            writeToExcel.createRow(transactionId, reportData);
-//            logger.info("Processing report data: " + counter);
-//        });
-//
-//        return counter;
-//    }

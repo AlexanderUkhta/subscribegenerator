@@ -1,5 +1,9 @@
 package com.a1s.subscribegeneratorapp.model;
 
+/**
+ * Represents information, kept in a concatenation map, if input request needs to be concatenated.
+ * Includes current message parts and the required quantity of these parts.
+ */
 public class SubmitSmData {
     private int partId;
     private byte[] shortMessage;

@@ -21,6 +21,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.a1s.ConfigurationConstantsAndMethods.*;
 
+/**
+ * Represents methods for writing and saving excel workbook.
+ */
 @Component
 public class WriteToExcel {
     private static final Log logger = LogFactory.getLog(WriteToExcel.class);
@@ -41,7 +44,7 @@ public class WriteToExcel {
     }
 
     /**
-     * Receiving the date up to an hour
+     * Returns current date, which is then set as sheetName.
      * @return string like "2019-03-18 18-49"
      */
     private String getDateWithHourAccuracy() {
@@ -50,7 +53,7 @@ public class WriteToExcel {
     }
 
     /**
-     * Added generation of column names in the report.
+     * Generates first row, that contains column headers.
      */
     public void createFirstRow() {
         List<String> columnName = msisdnAndExcelProperties.getExcelColumns();
@@ -63,8 +66,8 @@ public class WriteToExcel {
     }
 
     /**
-     * Creates a row in the report and fills it with data from the ReportData
-     * @param reportDataMap
+     * Creates a row in the report sheet and fills it with data from the ReportData.
+     * @param reportDataMap final map, that is formed after all subscribe responses had arrived
      */
     public int writeMap(final Map<Integer, ReportData> reportDataMap) {
         AtomicInteger rowsProcessed = new AtomicInteger();
@@ -104,41 +107,48 @@ public class WriteToExcel {
 
     }
 
-    private int createCell(XSSFRow row, int cellId, ReportData data) {
+    /**
+     * Creates cell in current sheet and fills it with information, according to the column id.
+     * @param row current raw, correlates with transactionId
+     * @param cellId number of current cell in current raw
+     * @param reportData contains the information to be set in all report columns
+     * @return ONE if actual and expected responses do not correspond, otherwise ZERO
+     */
+    private int createCell(XSSFRow row, int cellId, ReportData reportData) {
         XSSFCell cell = row.createCell(cellId, CellType.STRING);
         List<String> columnName = msisdnAndExcelProperties.getExcelColumns();
 
         switch (columnName.get(cellId)) {
-            case ("PS_ID_NAME"): //название подписки/рассылки
-                if (data.getSubscribeRequestData().getPsIdName() != null)
-                    cell.setCellValue(data.getSubscribeRequestData().getPsIdName());
+            case ("PS_ID_NAME"):
+                if (reportData.getSubscribeRequestData().getPsIdName() != null)
+                    cell.setCellValue(reportData.getSubscribeRequestData().getPsIdName());
                 else cell.setCellValue(EMPTY_CELL);
                 break;
             case ("PS_ID"):
-                if (data.getSubscribeRequestData().getPsId() != 0)
-                    cell.setCellValue(String.valueOf(data.getSubscribeRequestData().getPsId()));
+                if (reportData.getSubscribeRequestData().getPsId() != 0)
+                    cell.setCellValue(String.valueOf(reportData.getSubscribeRequestData().getPsId()));
                 else cell.setCellValue(EMPTY_CELL);
                 break;
             case ("SHORT_NUM"):
-                if (data.getSubscribeRequestData().getShortNum() != null)
-                    cell.setCellValue(data.getSubscribeRequestData().getShortNum());
+                if (reportData.getSubscribeRequestData().getShortNum() != null)
+                    cell.setCellValue(reportData.getSubscribeRequestData().getShortNum());
                 else cell.setCellValue(EMPTY_CELL);
                 break;
-            case ("REQUEST"): //текст сообщения
-                if (data.getSubscribeRequestData().getRequestText() != null)
-                    cell.setCellValue(data.getSubscribeRequestData().getRequestText());
+            case ("REQUEST"):
+                if (reportData.getSubscribeRequestData().getRequestText() != null)
+                    cell.setCellValue(reportData.getSubscribeRequestData().getRequestText());
                 else cell.setCellValue(EMPTY_CELL);
                 break;
-            case ("EXPECTED_RESPONSE"): //ожидаемый результат
-                if (data.getSubscribeRequestData().getResponseText() != null)
-                    cell.setCellValue(data.getSubscribeRequestData().getResponseText());
+            case ("EXPECTED_RESPONSE"):
+                if (reportData.getSubscribeRequestData().getResponseText() != null)
+                    cell.setCellValue(reportData.getSubscribeRequestData().getResponseText());
                 else cell.setCellValue(EMPTY_CELL);
                 break;
             case ("ACTUAL_RESPONSE"):
-                if (data.getActualResponse() != null) {
-                    String actualResponse = data.getActualResponse();
-                    String expectedResult = data.getSubscribeRequestData().getResponseText();
-                    cell.setCellValue(data.getActualResponse());
+                if (reportData.getActualResponse() != null) {
+                    String actualResponse = reportData.getActualResponse();
+                    String expectedResult = reportData.getSubscribeRequestData().getResponseText();
+                    cell.setCellValue(reportData.getActualResponse());
                     XSSFCell expectedCell = row.getCell(cellId - 1);
 
                     if (actualResponse.equals(expectedResult)) {
@@ -149,23 +159,17 @@ public class WriteToExcel {
                         expectedCell.setCellStyle(cellStyle.redBorderCell(book));
                         return 1;
                     }
-
                 } else
                     cell.setCellValue(EMPTY_CELL);
 
                 break;
             case ("ERROR_DATA"):
-                String errorMessage = data.getErrorMessage();
+                String errorMessage = reportData.getErrorMessage();
                 if (errorMessage != null) {
-                    cell.setCellValue(data.getErrorMessage());
+                    cell.setCellValue(reportData.getErrorMessage());
                     cell.setCellStyle(cellStyle.redBorderCell(book));
                 }
                 break;
-//                case ("welcome notification"): //нотификация при подключении
-//                    if (data.getSubscribeRequestData().getResponseText() != null)
-//                        cell.setCellValue(data.getSubscribeRequestData().getResponseText());
-//                    else cell.setCellValue(EMPTY_CELL);
-//                    break;
             default:
                 break;
 
@@ -175,19 +179,19 @@ public class WriteToExcel {
     }
 
     /**
-     * Saves report in directory src/main/resources/
+     * Saves Excel report in directory src/main/resources/.
      */
     private void saveReport() {
         try {
             autosizeColumns();
 
-            FileOutputStream out = new FileOutputStream("src/main/resources/subscribegeneratorreport.xlsx");
+            FileOutputStream out = new FileOutputStream(REPORT_PATH);
             book.write(out);
             out.close();
             book.close();
-            logger.info("Report document is saved");
+            logger.info("Report document is saved.");
         } catch (FileNotFoundException e) {
-            logger.error("Can't find excel", e);
+            logger.error("Can't find excel on the given path.", e);
             e.printStackTrace();
         } catch (IOException e) {
             logger.error(e);
@@ -195,9 +199,13 @@ public class WriteToExcel {
         }
     }
 
+    /**
+     * Autosizes columns by text length.
+     */
     private void autosizeColumns() {
         for (int i  = 0; i < sheet.getRow(0).getPhysicalNumberOfCells(); i++) {
             sheet.autoSizeColumn(i);
         }
+        logger.info("All columns in report have been autosized.");
     }
 }

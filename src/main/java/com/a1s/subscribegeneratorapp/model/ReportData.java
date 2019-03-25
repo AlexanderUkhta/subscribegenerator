@@ -1,5 +1,10 @@
 package com.a1s.subscribegeneratorapp.model;
 
+/**
+ * Represents data, that is put in a report map at the end of each transaction.
+ * Contains subscribeRequestData from initial read-excel operation.
+ * 
+ */
 public class ReportData {
     private int id;
     private String actualResponse, errorMessage;

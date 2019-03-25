@@ -15,6 +15,10 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.Charset;
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * Service, that starts and stops CustomSmppServer, makes deliver_sm requests
+ * out of subscribeRequestData.
+ */
 @Service
 public class SmscProcessorService {
     private static final Log logger = LogFactory.getLog(SmscProcessorService.class);
@@ -28,16 +32,26 @@ public class SmscProcessorService {
 
     private DeliverSm currentReadyDeliverSm = new DeliverSm();
 
-    //todo remove?
-    void startSmsc(CountDownLatch bindCompleted) {
+    /**
+     * Starts SMSC and sets the smppSession to the one with SYSTEM_ID.
+     * @param bindCompleted will be counted down after smppSession is started
+     */
+    void startSmsc(CountDownLatch bindCompleted) { //todo remove after using smartLifeCycle
         customSmppServer.startServerMain(bindCompleted);
         requestQueueService.setSmppSession();
     }
 
-    void stopSmsc() {
+    /**
+     * Stops SMSC.
+     */
+    void stopSmsc() {   //todo remove after using smartLifeCycle
         customSmppServer.stop();
     }
 
+    /**
+     * Makes deliver_sm request without source_address out of subscribeRequestData
+     * @param dataForRequest contains short_num and short_message for request
+     */
     void makeRequestFromDataAndSend(final SubscribeRequestData dataForRequest) {
         Address destinationAddress = new Address((byte) 1, (byte) 1, dataForRequest.getShortNum());
         logger.info("Creating " + dataForRequest.getId() + "th deliver_sm, yet without msisdn...");
@@ -53,6 +67,11 @@ public class SmscProcessorService {
         sendRequest(currentReadyDeliverSm, dataForRequest.getId());
     }
 
+    /**
+     * Puts outgoingDeliverSm to SMSC queue.
+     * @param outgoingDeliverSm currently processing deliver_sm request
+     * @param transactionId id of current operation
+     */
     private void sendRequest(final DeliverSm outgoingDeliverSm, final int transactionId) {
         requestQueueService.putDeliverSmToQueue(outgoingDeliverSm, transactionId);
     }

@@ -41,7 +41,7 @@ public class CustomSmppServer extends DefaultSmppServer {
 
 
     private static ScheduledThreadPoolExecutor monitorExecutor =
-        (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1, new ThreadFactory() {
+        (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(3, new ThreadFactory() {
         private AtomicInteger sequence = new AtomicInteger(0);
             @Override
             public Thread newThread(Runnable r) {

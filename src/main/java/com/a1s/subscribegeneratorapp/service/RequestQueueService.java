@@ -20,6 +20,12 @@ import java.util.concurrent.TimeoutException;
 
 import static com.a1s.ConfigurationConstantsAndMethods.*;
 
+/**
+ * Service, that gradually appropriates msisdn value to each formed deliver_sm request.
+ * Then deliver_sm request is put in CustomSmppServer queue and sent to client.
+ * If all msisdns in a pool are busy for more than 20 seconds, transaction is finished by force
+ * and next transaction starts.
+ */
 @Service
 @ComponentScan(value = "com.a1s.subscribegeneratorapp")
 public class RequestQueueService {
@@ -35,7 +41,16 @@ public class RequestQueueService {
     private Map<String, MsisdnStateData> msisdnProcessMap = new ConcurrentHashMap<>();
     private DefaultSmppSession smppSession;
 
-
+    /**
+     * Sets deliver_sm source_address by msisdn value. Puts deliver_sm to CustomSmpServer queue.
+     * When deliver_sm is sent with a source_address, a proper msisdn becomes BUSY.
+     * If all msisdns in a pool are busy for more than 20 seconds, transaction is finished by force
+     * and next transaction starts.
+     * If there are problems with sending pdu, PduException appears. In this case, error report is generated,
+     * msisdn becomes NOT_BUSY.
+     * @param deliverSm currently processing deliver_sm
+     * @param transactionId id of current transaction
+     */
     void putDeliverSmToQueue(DeliverSm deliverSm, final int transactionId) {
 
         try {
@@ -85,11 +100,14 @@ public class RequestQueueService {
             logger.error("Got interrupted exception while sending request", e5);
             transactionReportService.processOneFailureReport(transactionId, GOT_INTERRUPTED_EXCEPTION);
             makeMsisdnNotBusy(currentFreeMsisdn);
-
         }
 
     }
 
+    /**
+     * Gets the first free msisdn from msisdnProcessMap, if such exists.
+     * @return msisdn which is NOT_BUSY, and 'null' if there is no free msisdn
+     */
     private String getNextFreeMsisdn() {
         return msisdnProcessMap.entrySet().stream()
                 .filter(entry -> (entry.getValue().getBusyState() == MSISDN_NOT_BUSY))
@@ -99,6 +117,10 @@ public class RequestQueueService {
 
     }
 
+    /**
+     * Returns the state of msisdnProcessMap, either it is full or not.
+     * @return 'true' if map is full, otherwise 'false'
+     */
     private Boolean hasNoFreeMsisdn() {
         return msisdnProcessMap.values()
                 .stream()
@@ -106,6 +128,10 @@ public class RequestQueueService {
 
     }
 
+    /**
+     * Returns the state of msisdnProcessMap, either it is fully NOT_BUSY.
+     * @return 'true' if map has only NOT_BUSY msisdns, otherwise 'false'
+     */
     Boolean hasAllMsisdnFree() {
         return msisdnProcessMap.values()
                 .stream()
@@ -113,12 +139,21 @@ public class RequestQueueService {
 
     }
 
+    /**
+     * Makes given msisdn NOT_BUSY.
+     * @param msisdn current msisdn
+     */
     void makeMsisdnNotBusy(final String msisdn) {
         msisdnProcessMap.put(msisdn, new MsisdnStateData(-1, -1, MSISDN_NOT_BUSY));
-        logger.info("Msisdn " + msisdn + " is now free");
+        logger.info("Msisdn " + msisdn + " is now not_busy");
 
     }
 
+    /**
+     * Method is invoked, when MsisdnTimeoutTask reports timeout on given msisdn.
+     * In this case, error report is processed and msisdn become NOT_BUSY.
+     * @param msisdn msisdn that caught timeout
+     */
     public void processMsisdnTimeoutCase(final String msisdn) {
         transactionReportService.processOneFailureReport(getTransactionIdByMsisdn(msisdn),
                 GOT_MSISDN_TIMEOUT_EXCEPTION + msisdn);
@@ -126,6 +161,9 @@ public class RequestQueueService {
 
     }
 
+    /**
+     * Fills msisdnProcessMap with test msisdns from application.properties.
+     */
     void fillMsisdnMap() {
         List<String> msisdnList = msisdnAndExcelProperties.getMsisdnList();
         msisdnList.forEach(msisdn -> msisdnProcessMap
@@ -135,16 +173,28 @@ public class RequestQueueService {
 
     }
 
+    /**
+     * Returns msisdnProcessMap.
+     * @return
+     */
     public Map<String, MsisdnStateData> getMsisdnMap() {
         return msisdnProcessMap;
 
     }
 
+    /**
+     * Returns transactionId by given msisdn.
+     * @param msisdn current msisdn
+     * @return transactionId
+     */
     int getTransactionIdByMsisdn(final String msisdn) {
         return msisdnProcessMap.get(msisdn).getCurrentTransactionId();
 
     }
 
+    /**
+     * Sets smppSession to a non-null value after CustomSmppServer is started.
+     */
     void setSmppSession() {
         smppSession = (DefaultSmppSession) CustomSmppServer.getServerSession(SYSTEM_ID);
 

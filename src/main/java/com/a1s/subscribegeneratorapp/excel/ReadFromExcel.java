@@ -13,50 +13,54 @@ import org.springframework.stereotype.Component;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import static com.a1s.ConfigurationConstantsAndMethods.INPUT_EXCEL_PATH;
 
+/**
+ * Represents methods for reading text data from excel workbook.
+ */
 @Component
 public class ReadFromExcel {
     private static final Log logger = LogFactory.getLog(ReadFromExcel.class);
-    private static final String file = "src/main/resources/file.xlsx";
+    private static final String file = INPUT_EXCEL_PATH;
     private XSSFWorkbook book = getBook();
 
     /**
-     * Get the number of the last cell in the first row of the sheet
-     * @param sheet excel sheet
-     * @return
+     * Gets the number of last cell in the first row, that contains data.
+     * @param sheet current excel sheet
+     * @return the number of last cell
      */
-    public int getLastCellId(XSSFSheet sheet) {
+    private int getLastCellId(XSSFSheet sheet) {
         XSSFRow row = sheet.getRow(0);
         return row.getLastCellNum();
     }
 
     /**
-     * Get the last row id on the page
-     * @param sheet  excel sheet
-     * @return
+     * Gets the number of last row on current excel sheet.
+     * @param sheet current excel sheet
+     * @return the number of last row
      */
     public int getLastRowId(XSSFSheet sheet) {
         return sheet.getLastRowNum();
     }
 
     /**
-     * Get excel book
-     * @return
+     * Gets excel workbook from given FILE_PATH.
+     * @return excel workbook
      */
     private XSSFWorkbook getBook() {
         XSSFWorkbook workbook;
         try {
             workbook = new XSSFWorkbook(new FileInputStream(file));
         } catch (IOException e) {
-            logger.error("Can't get book", e);
-            throw new RuntimeException("Can't get book");
+            logger.error("Cannot get workbook.", e);
+            throw new RuntimeException("Cannot get workbook.");
         }
         return workbook;
     }
 
     /**
-     * Get a page with a specific title from the book
-     * @return
+     * Gets an excel sheet with a specific title from the workbook.
+     * @return excel sheet
      */
     public XSSFSheet getSheet(String sheetName) {
         XSSFSheet sheet;
@@ -70,11 +74,11 @@ public class ReadFromExcel {
     }
 
     /**
-     * Get cell by coordinates
+     * Gets cell by coordinates.
      * @param r row id
      * @param c cell id
-     * @param sheet apache sheet
-     * @return
+     * @param sheet excel sheet
+     * @return cell with 'r' and 'c' coordinates
      */
     private Cell getCell(int r, int c, XSSFSheet sheet) {
         Row row = sheet.getRow(r);
@@ -90,11 +94,11 @@ public class ReadFromExcel {
     }
 
     /**
-     * Get cell value
-     * @param r
-     * @param c
-     * @param sheet
-     * @return
+     * Gets cell value by coordinates.
+     * @param r row id
+     * @param c cell id
+     * @param sheet excel sheet
+     * @return cell value with 'r' and 'c' coordinates
      */
     public String getCellValue(int r, int c, XSSFSheet sheet) {
         Cell cell = getCell(r, c, sheet);
@@ -112,10 +116,10 @@ public class ReadFromExcel {
     }
 
     /**
-     * Get cell id
-     * @param cellValue text in cell
-     * @param sheet
-     * @return
+     * Gets cell id by its value in the first row.
+     * @param cellValue text value of current cell
+     * @param sheet excel sheet
+     * @return cell id
      */
     public int getCellId(String cellValue, XSSFSheet sheet) {
         int id = 0;

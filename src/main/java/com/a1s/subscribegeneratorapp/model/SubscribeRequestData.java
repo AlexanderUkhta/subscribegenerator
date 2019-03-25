@@ -1,5 +1,9 @@
 package com.a1s.subscribegeneratorapp.model;
 
+/**
+ * Represents data, got after processing initial excel document.
+ * The data is then used to generate subscribe requests properly.
+ */
 public class SubscribeRequestData {
     private int id, psId;
     private String psIdName, shortNum, requestText, responseText;

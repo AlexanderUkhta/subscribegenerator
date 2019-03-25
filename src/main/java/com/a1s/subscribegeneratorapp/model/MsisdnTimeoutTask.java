@@ -11,6 +11,11 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * Thread, that is running permanently after msisdn pool is created.
+ * Generates TimeoutException, when msisdn does not receive response for more than 30 seconds.
+ * When exception is thrown, msisdn becomes NOT_BUSY.
+ */
 @Component
 public class MsisdnTimeoutTask implements Runnable{
     private static final Log logger = LogFactory.getLog(MsisdnTimeoutTask.class);

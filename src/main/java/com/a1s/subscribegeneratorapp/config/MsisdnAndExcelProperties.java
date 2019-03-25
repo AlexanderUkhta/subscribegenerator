@@ -5,6 +5,11 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
+/**
+ * Springboot configuration data.
+ * Represents list of test msisdns.
+ * Represents list of column headers to be generated in final report.
+ */
 @Configuration
 @ConfigurationProperties(prefix = "app")
 public class MsisdnAndExcelProperties {

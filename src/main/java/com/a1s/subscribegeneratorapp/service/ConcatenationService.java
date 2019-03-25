@@ -16,6 +16,10 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 
+/**
+ * Service, that is used to process all the submit_sm requests, received by CustomSmppServer.
+ * Processes UDH, SAR, PAYLOAD concatenation and also simple one-part submit_sm requests.
+ */
 @Service("concatenationService")
 public class ConcatenationService {
     private static final Log logger = LogFactory.getLog(ConcatenationService.class);
@@ -25,6 +29,12 @@ public class ConcatenationService {
     @Autowired
     private TransactionReportService transactionReportService;
 
+    /**
+     * Processes submit_sm, if it has the userDataHeader.
+     * Processed request is than put in the pool of message parts. If all parts for current msisdn are received,
+     * they are then concatenated and are put to the report map. In this case, msisdn becomes NOT_BUSY.
+     * @param submitSm received submit_sm request
+     */
     public void processUdhConcatPart(final SubmitSm submitSm) {
         String msisdn = submitSm.getDestAddress().getAddress();
         String linkId = submitSm.getSourceAddress().getAddress();
@@ -50,6 +60,12 @@ public class ConcatenationService {
 
     }
 
+    /**
+     * Processes submit_sm, if it has the sar optional parameters.
+     * Processed request is than put in the pool of message parts. If all parts for current msisdn are received,
+     * they are then concatenated and are put to the report map. In this case, msisdn becomes NOT_BUSY.
+     * @param submitSm received submit_sm request
+     */
     public void processSarConcatPart(final SubmitSm submitSm) {
         String msisdn = submitSm.getDestAddress().getAddress();
         String linkId = submitSm.getSourceAddress().getAddress();
@@ -85,6 +101,11 @@ public class ConcatenationService {
 
     }
 
+    /**
+     * Processes submit_sm, if it has the payload optional parameters.
+     * The data from submit_sm id then put to the report map, msisdn becomes NOT_BUSY.
+     * @param submitSm received submit_sm request
+     */
     public void processPayloadConcatMessage(final SubmitSm submitSm) {
         logger.info("Got PAYLOAD for msisdn = " + submitSm.getDestAddress().getAddress() +
                 ", processing");
@@ -95,6 +116,11 @@ public class ConcatenationService {
 
     }
 
+    /**
+     * Processes simple one-part submit_sm.
+     * The data from submit_sm id then put to the report map, msisdn becomes NOT_BUSY.
+     * @param submitSm received submit_sm request
+     */
     public void processSimpleMessage(final SubmitSm submitSm) {
         logger.info("Got simple message for msisdn = " + submitSm.getDestAddress().getAddress() +
                 ", processing");
@@ -104,13 +130,16 @@ public class ConcatenationService {
 
     }
 
-    /* combines parts of UDH/SAR-concatenated request */
-    private byte[] concatenateUdhOrSar(final Collection<SubmitSmData> submitSmDataCollection) {
+    /**
+     * Makes one byte message from several message parts, received by UDH or SAR.
+     * @param messagePartsCollection message parts, that need to be concatenated
+     * @return concatenated byte message
+     */
+    private byte[] concatenateUdhOrSar(final Collection<SubmitSmData> messagePartsCollection) {
 
-        /* We are creating a treeMap in order to sort ConcurrentHashMap keys */
         Map<Integer, byte[]> treeMap = new TreeMap<>();
 
-        for(SubmitSmData oneData : submitSmDataCollection) {
+        for(SubmitSmData oneData : messagePartsCollection) {
             treeMap.put(oneData.getPartId(), oneData.getShortMessage());
         }
 

@@ -16,6 +16,10 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Represents the main controller of the app.
+ * Here http-requests are mapped to /processData or /testExcel methods, then are processed.
+ */
 @Controller
 public class MainController {
 
@@ -26,6 +30,12 @@ public class MainController {
     @Autowired
     private ContextProcessorService contextProcessorService;
 
+    /**
+     * Processes the /processData request, then runs subscribe generator process.
+     * Final result is mapped to 'process.jsp' view.
+     * @param model
+     * @return
+     */
     @RequestMapping(value = "/processData", method = RequestMethod.GET)
     public String processRequests(ModelMap model) {
 
@@ -36,14 +46,19 @@ public class MainController {
         return "process";
     }
 
+    /**
+     * Used for testing. Processes the /testExcel request, then gets request_map by ExcelReadService,
+     * creates report by ExcelCreateService.
+     * Final result is mapped to 'test.jsp' view.
+     * @param model
+     * @return
+     */
     @RequestMapping(value = "/testExcel", method = RequestMethod.GET)
     public String showContext(ModelMap model) {
-
         Map<Integer, SubscribeRequestData> startMap = excelReadService.findAll();
         Map<Integer, ReportData> finishMap = new ConcurrentHashMap<>();
 
         startMap.forEach((id, subscribeRequestData) -> {
-
             if (id % 3 == 0) {
                 finishMap.put(id, new ReportData(id, "test_error"));
             } else if (id % 4 == 0) {

@@ -16,6 +16,11 @@ import java.util.concurrent.TimeoutException;
 import static com.a1s.ConfigurationConstantsAndMethods.stopMsisdnTimeoutService;
 import static com.a1s.ConfigurationConstantsAndMethods.ultimateWhile;
 
+/**
+ * Service, that starts the main components of application, implements full process of generating requests from
+ * excel-data and then finishes by generating full transaction report.
+ *
+ */
 @Service
 public class ContextProcessorService {
     private static final Log logger = LogFactory.getLog(ContextProcessorService.class);
@@ -34,7 +39,10 @@ public class ContextProcessorService {
     @Autowired
     private ThreadPoolTaskScheduler threadPoolTaskScheduler;
 
-
+    /**
+     * Starts SMSC, sets msisnMap in requestQueue service, starts subscribe requests processing.
+     * At the end makes full report out of transaction results.
+     */
     public void process() {
         logger.info("Got context map full, going to start SMSC...");
 

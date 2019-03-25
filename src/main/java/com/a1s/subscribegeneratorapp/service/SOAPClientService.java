@@ -11,12 +11,25 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
 
+/**
+ * Service, that is used to unsubscribe one currently processing tele2_abonent from all subscriptions.
+ */
 @Service
 public class SOAPClientService {
     private static final Log logger = LogFactory.getLog(SOAPClientService.class);
 
     @Autowired
     private RequestQueueService requestQueueService;
+
+    private final String wsdlUrl = "http://portal-subscribe.a1s/ws/";
+
+    private final String namespaceUri =  "urn:http://service.a1s/PortalSubscribe";
+    private final String operationQNameLocalPart = "UnsubscribeAllRequestEl";
+    private final String operationQNamePrefix = "ns1";
+
+    private final String msisdnQNameLocalPart = "msisdn";
+    private final String operatorQNameLocalPart = "operatorId";
+    private final String tele2OperatorId = "107";
 
     void unsubscribeAllForMsisdn(String currentMsisdn) {
         try {
@@ -29,21 +42,21 @@ public class SOAPClientService {
             SOAPBody body = message.getSOAPBody();
             header.detachNode();
 
-            QName bodyName = new QName("urn:http://service.a1s/PortalSubscribe",
-                    "UnsubscribeAllRequestEl", "ns1");
+            QName bodyName = new QName(namespaceUri,
+                    operationQNameLocalPart, operationQNamePrefix);
             SOAPBodyElement bodyElement = body.addBodyElement(bodyName);
 
-            QName msisdn = new QName("msisdn");
+            QName msisdn = new QName(msisdnQNameLocalPart);
             SOAPElement symbol1 = bodyElement.addChildElement(msisdn);
             symbol1.addTextNode(currentMsisdn);
 
-            QName operatorId = new QName("operatorId");
+            QName operatorId = new QName(operatorQNameLocalPart);
             SOAPElement symbol2 = bodyElement.addChildElement(operatorId);
-            symbol2.addTextNode("107");
+            symbol2.addTextNode(tele2OperatorId);
 
             message.saveChanges();
 
-            URL endpoint = new URL("http://portal-subscribe.a1s/ws/");
+            URL endpoint = new URL(wsdlUrl);
 
             ByteArrayOutputStream outputStream1 = new ByteArrayOutputStream();
             message.writeTo(outputStream1);
