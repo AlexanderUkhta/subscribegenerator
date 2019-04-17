@@ -39,7 +39,7 @@ public class TransactionReportService {
         String actualResponse = new String(receivedShortMessage);
         SubscribeRequestData requestThatMatchesCurrentResponse = contextProcessorService.findRequestDataById(transactionId);
 
-        logger.info("Putting in Map one normal report for operation with id = " + transactionId);
+        logger.info("Putting in Map one normal report for operation with id = " + transactionId + ", msisdn = " + msisdn);
         reportDataMap.put(transactionId, new ReportData(transactionId, actualResponse, requestThatMatchesCurrentResponse));
 
         requestQueueService.makeMsisdnNotBusy(msisdn);
@@ -51,7 +51,7 @@ public class TransactionReportService {
      * @param transactionId id of current failed operation
      * @param errorMessage contains error description
      */
-    void processOneFailureReport(final int transactionId, final String errorMessage) {
+    public void processOneFailureReport(final int transactionId, final String errorMessage) {
         logger.info("Putting in Map one error report for operation with id = " + transactionId);
         reportDataMap.put(transactionId, new ReportData(transactionId, errorMessage));
 
@@ -65,5 +65,19 @@ public class TransactionReportService {
         logger.info("ExelCreateService is pushed to make full data report...");
         excelCreateService.makeFullDataReport(reportDataTreeMap);
 
+    }
+
+    long getSuccessfulTransactionsQuantity() {
+        return reportDataMap.entrySet().stream()
+                .filter(entry -> (entry.getValue().getErrorMessage() == null))
+                .map(Map.Entry::getValue)
+                .count();
+    }
+
+    long getFailedTransactionsQuantity() {
+        return reportDataMap.entrySet().stream()
+                .filter(entry -> (entry.getValue().getErrorMessage() != null))
+                .map(Map.Entry::getValue)
+                .count();
     }
 }

@@ -10,8 +10,11 @@ public class ConfigurationConstantsAndMethods {
 
     public static final Integer MSISDN_NOT_BUSY = 0;
     public static final Integer MSISDN_BUSY = 1;
+    public static final Integer RECEIPT_NEEDED = 0;
+    public static final Integer RECEIPT_NOT_NEEDED = 0;
 
     public static AtomicInteger stopMsisdnTimeoutService = new AtomicInteger(0);
+    public static AtomicInteger rowQuantityInExcel = new AtomicInteger(0);
 
     public static final String ALL_MSISDN_BUSY_FOR_TOO_LONG = "All msisdns were busy for too long, transaction failed";
     public static final String GOT_RCVRBL_PDU_EXCEPTION = "Got recoverable pdu exception while sending request";
@@ -20,9 +23,10 @@ public class ConfigurationConstantsAndMethods {
     public static final String GOT_SMPP_CHANNEL_EXCEPTION = "Got smpp channel exception while sending request";
     public static final String GOT_INTERRUPTED_EXCEPTION = "Got interrupted exception while sending request";
     public static final String GOT_SMPP_INVALID_ARG_EXCEPTION = "Smth wrong while setting short message for deliver_sm";
+    public static final String GOT_EXCEPTION_MAKING_BYTECODED_XML = "Smth wrong while setting deliver_sm with bytecoded 'YES'";
     public static final String GOT_MSISDN_TIMEOUT_EXCEPTION = "Subscribe response has not been received at 30 secs for msisdn: ";
 
-    public static final String INPUT_EXCEL_PATH = "src/main/resources/file.xlsx";
+    public static final String INPUT_EXCEL_PATH = "src/main/resources/debugfile.xlsx";
     public static final String REPORT_PATH = "src/main/resources/subscribegeneratorreport.xlsx";
 
     public static final String EMPTY_CELL = "---";

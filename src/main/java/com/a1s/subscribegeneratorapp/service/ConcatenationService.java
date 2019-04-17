@@ -20,7 +20,7 @@ import java.util.TreeMap;
  * Service, that is used to process all the submit_sm requests, received by CustomSmppServer.
  * Processes UDH, SAR, PAYLOAD concatenation and also simple one-part submit_sm requests.
  */
-@Service("concatenationService")
+@Service
 public class ConcatenationService {
     private static final Log logger = LogFactory.getLog(ConcatenationService.class);
 
@@ -50,11 +50,10 @@ public class ConcatenationService {
                 GsmUtil.getShortMessageUserData(submitSm.getShortMessage())));
 
         if (udhPartsQuantity == messageParts.get(messageFullId).size()) {
-            logger.info("Got all UDH parts for msisdn = " + submitSm.getDestAddress().getAddress() +
-                    ", processing UDH parts");
+            logger.info("Got all UDH parts for msisdn = " + msisdn + ", getting whole text from UDH parts.");
+
             byte[] finalMessage = concatenateUdhOrSar(messageParts.get(messageFullId));
             messageParts.asMap().remove(messageFullId);
-
             transactionReportService.processOneInfoReport(finalMessage, msisdn);
         }
 
@@ -91,11 +90,10 @@ public class ConcatenationService {
                 submitSm.getShortMessage()));
 
         if (sarTotalSegments == messageParts.get(messageFullId).size()) {
-            logger.info("Got all SAR parts for msisdn = " + submitSm.getDestAddress().getAddress() +
-                    ", processing SAR parts");
+            logger.info("Got all SAR parts for msisdn = " + msisdn + ", getting whole text from SAR parts.");
+
             byte[] finalMessage = concatenateUdhOrSar(messageParts.get(messageFullId));
             messageParts.asMap().remove(messageFullId);
-
             transactionReportService.processOneInfoReport(finalMessage, msisdn);
         }
 
@@ -107,12 +105,13 @@ public class ConcatenationService {
      * @param submitSm received submit_sm request
      */
     public void processPayloadConcatMessage(final SubmitSm submitSm) {
-        logger.info("Got PAYLOAD for msisdn = " + submitSm.getDestAddress().getAddress() +
-                ", processing");
+        String destAddress = submitSm.getDestAddress().getAddress();
+
         Tlv messagePayload = submitSm.getOptionalParameter(SmppConstants.TAG_MESSAGE_PAYLOAD);
         byte[] shortMessage = messagePayload.getValue();
+        transactionReportService.processOneInfoReport(shortMessage, destAddress);
 
-        transactionReportService.processOneInfoReport(shortMessage, submitSm.getDestAddress().getAddress());
+        logger.info("Have processed PAYLOAD for msisdn = " + destAddress + ".");
 
     }
 
@@ -122,11 +121,11 @@ public class ConcatenationService {
      * @param submitSm received submit_sm request
      */
     public void processSimpleMessage(final SubmitSm submitSm) {
-        logger.info("Got simple message for msisdn = " + submitSm.getDestAddress().getAddress() +
-                ", processing");
+        String destAddress = submitSm.getDestAddress().getAddress();
         byte[] shortMessage = submitSm.getShortMessage();
+        transactionReportService.processOneInfoReport(shortMessage, destAddress);
 
-        transactionReportService.processOneInfoReport(shortMessage, submitSm.getDestAddress().getAddress());
+        logger.info("Have processed simple message for msisdn = " + destAddress + ".");
 
     }
 
@@ -138,13 +137,11 @@ public class ConcatenationService {
     private byte[] concatenateUdhOrSar(final Collection<SubmitSmData> messagePartsCollection) {
 
         Map<Integer, byte[]> treeMap = new TreeMap<>();
-
         for(SubmitSmData oneData : messagePartsCollection) {
             treeMap.put(oneData.getPartId(), oneData.getShortMessage());
         }
 
         ByteArrayOutputStream fullMultipartMessage = new ByteArrayOutputStream();
-
         for(Map.Entry<Integer, byte[]> entry : treeMap.entrySet()) {
             try {
                 fullMultipartMessage.write(entry.getValue());
@@ -153,7 +150,8 @@ public class ConcatenationService {
             }
 
         }
-       return fullMultipartMessage.toByteArray();
+
+        return fullMultipartMessage.toByteArray();
 
     }
 

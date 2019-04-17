@@ -31,7 +31,7 @@ public class MainController {
     private ContextProcessorService contextProcessorService;
 
     /**
-     * Processes the /processData request, then runs subscribe generator process.
+     * Processes the '/processData' request, then runs subscribe generator process.
      * Final result is mapped to 'process.jsp' view.
      * @param model
      * @return
@@ -40,14 +40,17 @@ public class MainController {
     public String processRequests(ModelMap model) {
 
         contextProcessorService.setSubscribeRequestMap(excelReadService.findAll());
-        contextProcessorService.process();
+        long[] resultsInfo = contextProcessorService.process();
 
         model.addAttribute("message", "Got SMPP templates processing");
+        model.addAttribute("processedSuccessfully", resultsInfo[0]);
+        model.addAttribute("processedWithError", resultsInfo[1]);
+
         return "process";
     }
 
     /**
-     * Used for testing. Processes the /testExcel request, then gets request_map by ExcelReadService,
+     * Used for testing. Processes the '/testExcel' request, then gets request_map by ExcelReadService,
      * creates report by ExcelCreateService.
      * Final result is mapped to 'test.jsp' view.
      * @param model

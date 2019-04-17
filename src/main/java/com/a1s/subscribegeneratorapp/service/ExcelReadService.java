@@ -1,5 +1,6 @@
 package com.a1s.subscribegeneratorapp.service;
 
+import com.a1s.ConfigurationConstantsAndMethods;
 import com.a1s.subscribegeneratorapp.excel.ReadFromExcel;
 import com.a1s.subscribegeneratorapp.model.SubscribeRequestData;
 import org.apache.commons.logging.Log;
@@ -32,8 +33,11 @@ public class ExcelReadService {
         logger.info("Started reading context from excel document.");
 
         Map<Integer, SubscribeRequestData> requestDataMap = new ConcurrentHashMap<>();
-        for(int i = 1; i <= readFromExcel.getLastRowId(readFromExcel.getSheet("Подключение")); i++) {
+        ConfigurationConstantsAndMethods.rowQuantityInExcel.set(readFromExcel.
+                getLastRowId(readFromExcel.getSheet("Подключение")));
 
+//        for(int i = 1; i <= ConfigurationConstantsAndMethods.rowQuantityInExcel.get(); i++) {
+        for(int i = 1; i <= 2; i++) {
             int psid = Integer.parseInt(readFromExcel.getCellValue(i, readFromExcel.getCellId("ps id",
                     readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение")));
 
@@ -42,16 +46,16 @@ public class ExcelReadService {
                 transactionReportService.processOneFailureReport(i, "Check the required parameters in row " + (i + 1));
 
             } else {
-                String shortNum = readFromExcel.getCellValue(i, readFromExcel.getCellId("Короткий номер",
+                String shortNum = readFromExcel.getCellValue(i, readFromExcel.getCellId("short num",
                         readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение"));
 
-                String textRequest = readFromExcel.getCellValue(i, readFromExcel.getCellId("Текст сообщения",
+                String textRequest = readFromExcel.getCellValue(i, readFromExcel.getCellId("text request",
                         readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение"));
 
-                String welcomeNotification = readFromExcel.getCellValue(findRow(psid), readFromExcel.getCellId("Нотификация при подключении",
+                String welcomeNotification = readFromExcel.getCellValue(findRow(psid), readFromExcel.getCellId("welcome notification",
                         readFromExcel.getSheet("Рассылки")), readFromExcel.getSheet("Рассылки"));
 
-                String subscriptionName = readFromExcel.getCellValue(findRow(psid), readFromExcel.getCellId("Название рассылки",
+                String subscriptionName = readFromExcel.getCellValue(findRow(psid), readFromExcel.getCellId("subscribe name",
                         readFromExcel.getSheet("Рассылки")), readFromExcel.getSheet("Рассылки"));
 
                 if(areInvalid(shortNum, textRequest, welcomeNotification)) {
@@ -60,7 +64,7 @@ public class ExcelReadService {
 
                 } else {
                     requestDataMap.put(i, new SubscribeRequestData(i, psid, subscriptionName, shortNum, textRequest, welcomeNotification));
-                    logger.info("Successfully processed row " + (i + 1));
+                    logger.info("Successfully processed row " + (i + 1) + "(request number " + i);
                 }
             }
 

@@ -87,6 +87,7 @@ public class CustomSmppServer extends DefaultSmppServer {
     }
 
     public static SmppServerSession getServerSession(String key) {
+        SmppServerSession session = serverSessionsActive.get(key);
         return serverSessionsActive.get(key);
     }
 

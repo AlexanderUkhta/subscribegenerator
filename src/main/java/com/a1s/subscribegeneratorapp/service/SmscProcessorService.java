@@ -3,6 +3,7 @@ package com.a1s.subscribegeneratorapp.service;
 import static com.a1s.ConfigurationConstantsAndMethods.*;
 import com.a1s.subscribegeneratorapp.smsc.CustomSmppServer;
 import com.a1s.subscribegeneratorapp.model.SubscribeRequestData;
+import com.cloudhopper.commons.charset.CharsetUtil;
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.pdu.DeliverSm;
 import com.cloudhopper.smpp.type.Address;
@@ -12,8 +13,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.Charset;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Service, that starts and stops CustomSmppServer, makes deliver_sm requests
@@ -38,6 +39,11 @@ public class SmscProcessorService {
      */
     void startSmsc(CountDownLatch bindCompleted) { //todo remove after using smartLifeCycle
         customSmppServer.startServerMain(bindCompleted);
+        try {
+            bindCompleted.await(20, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            logger.error("Smpp server did not start at 20 seconds", e);
+        }
         requestQueueService.setSmppSession();
     }
 
@@ -55,10 +61,11 @@ public class SmscProcessorService {
     void makeRequestFromDataAndSend(final SubscribeRequestData dataForRequest) {
         Address destinationAddress = new Address((byte) 1, (byte) 1, dataForRequest.getShortNum());
         logger.info("Creating " + dataForRequest.getId() + "th deliver_sm, yet without msisdn...");
+
         try {
             currentReadyDeliverSm.setDestAddress(destinationAddress);
-            currentReadyDeliverSm.setShortMessage(dataForRequest.getRequestText().getBytes(Charset.forName("UTF-16")));
-            currentReadyDeliverSm.setDataCoding(SmppConstants.DATA_CODING_UCS2);
+            currentReadyDeliverSm.setShortMessage(CharsetUtil.encode(dataForRequest.getRequestText(), CharsetUtil.CHARSET_UTF_8));
+            currentReadyDeliverSm.setDataCoding(SmppConstants.DATA_CODING_LATIN1);
         } catch (SmppInvalidArgumentException e) {
             logger.error("Smth wrong while setting short message for deliver_sm", e);
             transactionReportService.processOneFailureReport(dataForRequest.getId(), GOT_SMPP_INVALID_ARG_EXCEPTION);

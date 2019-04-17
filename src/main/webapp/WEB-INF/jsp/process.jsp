@@ -5,5 +5,7 @@
    </head>
    <body>
       <h2>${message}</h2>
+      <h3>${processedSuccessfully} requests processed successfully</h3>
+      <h3>${processedWithError} requests processed with error</h3>
    </body>
 </html>

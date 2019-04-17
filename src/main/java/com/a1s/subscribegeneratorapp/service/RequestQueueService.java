@@ -9,7 +9,6 @@ import com.cloudhopper.smpp.type.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,7 +26,6 @@ import static com.a1s.ConfigurationConstantsAndMethods.*;
  * and next transaction starts.
  */
 @Service
-@ComponentScan(value = "com.a1s.subscribegeneratorapp")
 public class RequestQueueService {
     private static final Log logger = LogFactory.getLog(RequestQueueService.class);
 
@@ -68,7 +66,7 @@ public class RequestQueueService {
         deliverSm.setSourceAddress(new Address((byte) 1, (byte) 1, currentFreeMsisdn));
 
         soapClientService.unsubscribeAllForMsisdn(currentFreeMsisdn);
-
+        logger.info("Current deliver_sm text: " + new String(deliverSm.getShortMessage()));
         try {
             smppSession.sendRequestPdu(deliverSm, TimeUnit.SECONDS.toMillis(60), false);
             logger.info(transactionId + "th deliver_sm request is sent from " + currentFreeMsisdn);
@@ -79,27 +77,22 @@ public class RequestQueueService {
         } catch (RecoverablePduException e1) {
             logger.error("Got recoverable pdu exception while sending request", e1);
             transactionReportService.processOneFailureReport(transactionId, GOT_RCVRBL_PDU_EXCEPTION);
-            makeMsisdnNotBusy(currentFreeMsisdn);
 
         } catch (UnrecoverablePduException e2) {
             logger.error("Got unrecoverable pdu exception while sending request", e2);
             transactionReportService.processOneFailureReport(transactionId, GOT_UNRCVRBL_PDU_EXCEPTION);
-            makeMsisdnNotBusy(currentFreeMsisdn);
 
         } catch (SmppTimeoutException e3) {
             logger.error("Got smpp timeout exception while sending request", e3);
             transactionReportService.processOneFailureReport(transactionId, GOT_SMPP_TIMEOUT_EXCEPTION);
-            makeMsisdnNotBusy(currentFreeMsisdn);
 
         } catch (SmppChannelException e4) {
             logger.error("Got smpp channel exception while sending request", e4);
             transactionReportService.processOneFailureReport(transactionId, GOT_SMPP_CHANNEL_EXCEPTION);
-            makeMsisdnNotBusy(currentFreeMsisdn);
 
         } catch (InterruptedException e5) {
             logger.error("Got interrupted exception while sending request", e5);
             transactionReportService.processOneFailureReport(transactionId, GOT_INTERRUPTED_EXCEPTION);
-            makeMsisdnNotBusy(currentFreeMsisdn);
         }
 
     }
@@ -132,10 +125,10 @@ public class RequestQueueService {
      * Returns the state of msisdnProcessMap, either it is fully NOT_BUSY.
      * @return 'true' if map has only NOT_BUSY msisdns, otherwise 'false'
      */
-    Boolean hasAllMsisdnFree() {
-        return msisdnProcessMap.values()
+    Boolean stillHasBusyMsisdns() {
+        return !(msisdnProcessMap.values()
                 .stream()
-                .allMatch(value -> (value.getBusyState() == MSISDN_NOT_BUSY));
+                .allMatch(value -> (value.getBusyState() == MSISDN_NOT_BUSY)));
 
     }
 
@@ -148,6 +141,13 @@ public class RequestQueueService {
         logger.info("Msisdn " + msisdn + " is now not_busy");
 
     }
+
+//    public void setNoDeliveryReceiptForMsisdn(final String msisdn) {
+//        MsisdnStateData data = msisdnProcessMap.get(msisdn);
+//        data.setNoDeliveryReceiptNeeded();
+//        msisdnProcessMap.put(msisdn, data);
+//
+//    }
 
     /**
      * Method is invoked, when MsisdnTimeoutTask reports timeout on given msisdn.
@@ -169,7 +169,7 @@ public class RequestQueueService {
         msisdnList.forEach(msisdn -> msisdnProcessMap
                 .put(msisdn, new MsisdnStateData(-1, -1, MSISDN_NOT_BUSY)));
         logger.info("Msisdn map is filled with " + msisdnProcessMap.size() + " pairs," +
-                " needed " + msisdnList.size() + "pairs");
+                " needed " + msisdnList.size() + " pairs");
 
     }
 
@@ -187,7 +187,7 @@ public class RequestQueueService {
      * @param msisdn current msisdn
      * @return transactionId
      */
-    int getTransactionIdByMsisdn(final String msisdn) {
+    public int getTransactionIdByMsisdn(final String msisdn) {
         return msisdnProcessMap.get(msisdn).getCurrentTransactionId();
 
     }
