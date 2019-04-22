@@ -109,17 +109,17 @@ public class CustomSmppSessionHandler extends DefaultSmppSessionHandler {
             }
 
             if (((SubmitSm) pduRequest).getDataCoding() == (byte) 0xF6) {
-                logger.info("Got SIM-specific message, making deliver_sm with affirmative bytecode");
-                try {
-                    DeliverSm deliverSm = new DeliverSm();
-                    deliverSm.setDestAddress(((SubmitSm) pduRequest).getSourceAddress());
-                    deliverSm.setShortMessage(CharsetUtil.encode("BYTECODE HERE", CharsetUtil.CHARSET_UTF_8)); //todo: enter ENCODED XML with 'YES'
-                    deliverSm.setDataCoding(SmppConstants.DATA_CODING_LATIN1); //todo: is this a correct DCS here?
-                } catch (SmppInvalidArgumentException e) {
-                    logger.error("Smth wrong while setting deliver_sm with bytecoded 'YES'", e);
-                    transactionReportService.processOneFailureReport(requestQueueService.getTransactionIdByMsisdn(msisdn),
-                            GOT_EXCEPTION_MAKING_BYTECODED_XML);
-                }
+                logger.info("Got SIM-specific message, IGNORING...");
+//                try {
+//                    DeliverSm deliverSm = new DeliverSm();
+//                    deliverSm.setDestAddress(((SubmitSm) pduRequest).getSourceAddress());
+//                    deliverSm.setShortMessage(CharsetUtil.encode("BYTECODE HERE", CharsetUtil.CHARSET_UTF_8)); //todo: enter ENCODED XML with 'YES'
+//                    deliverSm.setDataCoding(SmppConstants.DATA_CODING_LATIN1); //todo: is this a correct DCS here?
+//                } catch (SmppInvalidArgumentException e) {
+//                    logger.error("Smth wrong while setting deliver_sm with bytecoded 'YES'", e);
+//                    transactionReportService.processOneFailureReport(requestQueueService.getTransactionIdByMsisdn(msisdn),
+//                            GOT_EXCEPTION_MAKING_BYTECODED_XML);
+//                }
 
             } else if (((SubmitSm) pduRequest).getEsmClass() == SmppConstants.ESM_CLASS_UDHI_MASK) {   /* if got an UDH multipart submit_sm */
                 logger.info("Got UDH message part for msisdn = " + msisdn + ", processing..." );

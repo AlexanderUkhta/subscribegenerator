@@ -1,7 +1,9 @@
 package com.a1s.subscribegeneratorapp.service;
 
+import com.a1s.subscribegeneratorapp.model.Charsets;
 import com.a1s.subscribegeneratorapp.model.ReportData;
 import com.a1s.subscribegeneratorapp.model.SubscribeRequestData;
+import com.cloudhopper.commons.charset.CharsetUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,8 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.a1s.ConfigurationConstantsAndMethods.GOT_MSISDN_TIMEOUT_EXCEPTION;
 
 /**
  * Service, that collects success and error reports of app.
@@ -33,13 +37,13 @@ public class TransactionReportService {
      * @param receivedShortMessage currently received message, that needs to be reported
      * @param msisdn current msisdn, which got subscribe response and now needs to be NOT_BUSY
      */
-    void processOneInfoReport(final byte[] receivedShortMessage, final String msisdn) {
+    void processOneInfoReport(final byte[] receivedShortMessage, final String msisdn, final byte dcs) {
 
         int transactionId = requestQueueService.getTransactionIdByMsisdn(msisdn);
-        String actualResponse = new String(receivedShortMessage);
+        String actualResponse = CharsetUtil.decode(receivedShortMessage, Charsets.getCharsetName(dcs));
         SubscribeRequestData requestThatMatchesCurrentResponse = contextProcessorService.findRequestDataById(transactionId);
 
-        logger.info("Putting in Map one normal report for operation with id = " + transactionId + ", msisdn = " + msisdn);
+        logger.info("Putting in Map one NORMAL report for operation with id = " + transactionId + ", msisdn = " + msisdn);
         reportDataMap.put(transactionId, new ReportData(transactionId, actualResponse, requestThatMatchesCurrentResponse));
 
         requestQueueService.makeMsisdnNotBusy(msisdn);
@@ -47,12 +51,30 @@ public class TransactionReportService {
     }
 
     /**
+     * Puts one msisdn timeout report data in a map.
+     * Is invoked when there is no welcome notification from SDP for more, than msisdn_timeout value.
+     * @param msisdn current msisdn, which got subscribe response and now needs to be NOT_BUSY
+     */
+    void processMsisdnTimeoutReport(final String msisdn) {
+
+        int transactionId = requestQueueService.getTransactionIdByMsisdn(msisdn);
+        SubscribeRequestData requestThatMatchesCurrentResponse = contextProcessorService.findRequestDataById(transactionId);
+
+        logger.info("Putting in Map one MSISDN_TIMEOUT report for operation with id = "
+                + transactionId + ", msisdn = " + msisdn);
+        reportDataMap.put(transactionId, new ReportData(transactionId, requestThatMatchesCurrentResponse,
+                GOT_MSISDN_TIMEOUT_EXCEPTION + msisdn));
+
+        requestQueueService.makeMsisdnNotBusy(msisdn);
+    }
+
+    /**
      * Puts one error report data in a map, makes the proper msisdn NOT_BUSY.
      * @param transactionId id of current failed operation
      * @param errorMessage contains error description
      */
-    public void processOneFailureReport(final int transactionId, final String errorMessage) {
-        logger.info("Putting in Map one error report for operation with id = " + transactionId);
+    void processOneFailureReport(final int transactionId, final String errorMessage) {
+        logger.info("Putting in Map one ERROR report for operation with id = " + transactionId);
         reportDataMap.put(transactionId, new ReportData(transactionId, errorMessage));
 
     }
@@ -60,7 +82,7 @@ public class TransactionReportService {
     /**
      * Passes reportDataMap to excelCreateService, where full report will be processed.
      */
-    void makeFullDataReport() {
+    void startMakingFullDataReport() {
         TreeMap<Integer, ReportData> reportDataTreeMap = new TreeMap<>(reportDataMap);
         logger.info("ExelCreateService is pushed to make full data report...");
         excelCreateService.makeFullDataReport(reportDataTreeMap);

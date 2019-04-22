@@ -74,35 +74,40 @@ public class WriteToExcel {
         List<String> columnName = new ArrayList<>(msisdnAndExcelProperties.getExcelColumns());
         logger.info("Started putting report into new excel.");
 
-        try {
-            reportDataMap.forEach((transactionId, reportData) -> {
-                logger.info("Processing report data: " + rowsProcessed.incrementAndGet());
-                XSSFRow row = sheet.createRow(transactionId);
+        reportDataMap.forEach((transactionId, reportData) -> {
+            logger.info("Processing report data: " + rowsProcessed.incrementAndGet());
+            XSSFRow row = sheet.createRow(transactionId);
 
-                for (int cellId = 0; cellId < columnName.size(); cellId++) {
-                    if (reportData.getSubscribeRequestData() != null) {
-                        int result = createCell(row, cellId, reportData);
-                        if (result == 1) {
+            if (reportData.getSubscribeRequestData() != null) {
+                for (int cellId = 0; cellId < columnName.size() - 1; cellId++) {
+                    int result = createCell(row, cellId, reportData);
+                    if (result == 1) {
+                        if (reportData.getActualResponse() != null) {
                             reportData.setErrorMessage(RESPONSES_DONT_MATCH);
+                            createCell(row, ERROR_COLUMN, reportData);
+                            break;
+                        } else {
                             createCell(row, ERROR_COLUMN, reportData);
                             break;
                         }
 
-                    } else {
-                        for (int i = 0; i < columnName.size() - 1; i++) {
-                            XSSFCell cell = row.createCell(i, CellType.STRING);
-                            cell.setCellValue(EMPTY_CELL);
-                        }
-                        createCell(row, ERROR_COLUMN, reportData);
                     }
                 }
-            });
 
-        } finally {
-            logger.info("Finished putting report into new excel, going to save document.");
-            saveReport();
+            } else {
+                for (int cellId = 0; cellId < columnName.size() - 1; cellId++) {
+                    XSSFCell cell = row.createCell(cellId, CellType.STRING);
+                    cell.setCellValue(EMPTY_CELL);
+                }
+                createCell(row, ERROR_COLUMN, reportData);
 
-        }
+            }
+
+        });
+
+        logger.info("Finished putting report into new excel, going to save document.");
+        saveReport();
+
         return rowsProcessed.get();
 
     }
@@ -114,7 +119,7 @@ public class WriteToExcel {
      * @param reportData contains the information to be set in all report columns
      * @return ONE if actual and expected responses do not correspond, otherwise ZERO
      */
-    private int createCell(XSSFRow row, int cellId, ReportData reportData) {
+    private int createCell(final XSSFRow row, final int cellId, final ReportData reportData) {
         XSSFCell cell = row.createCell(cellId, CellType.STRING);
         List<String> columnName = msisdnAndExcelProperties.getExcelColumns();
 
@@ -151,16 +156,21 @@ public class WriteToExcel {
                     cell.setCellValue(reportData.getActualResponse());
                     XSSFCell expectedCell = row.getCell(cellId - 1);
 
-                    if (actualResponse.equals(expectedResult)) {
+                    if (actualResponse.contains(expectedResult)) {
                         cell.setCellStyle(cellStyle.greenBorderCell(book));
                         expectedCell.setCellStyle(cellStyle.greenBorderCell(book));
+                        logger.info("Results MATCH!");
                     } else {
                         cell.setCellStyle(cellStyle.redBorderCell(book));
                         expectedCell.setCellStyle(cellStyle.redBorderCell(book));
+                        logger.info("Results DO NOT MATCH!");
                         return 1;
+
                     }
-                } else
+                } else {
                     cell.setCellValue(EMPTY_CELL);
+                    return 1;
+                }
 
                 break;
             case ("ERROR_DATA"):

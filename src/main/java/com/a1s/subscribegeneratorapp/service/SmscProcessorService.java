@@ -63,8 +63,10 @@ public class SmscProcessorService {
         logger.info("Creating " + dataForRequest.getId() + "th deliver_sm, yet without msisdn...");
 
         try {
+            currentReadyDeliverSm.setSequenceNumber(dataForRequest.getId());
             currentReadyDeliverSm.setDestAddress(destinationAddress);
-            currentReadyDeliverSm.setShortMessage(CharsetUtil.encode(dataForRequest.getRequestText(), CharsetUtil.CHARSET_UTF_8));
+            currentReadyDeliverSm.setShortMessage(CharsetUtil.encode(dataForRequest.getRequestText(),
+                    CharsetUtil.CHARSET_UTF_8));
             currentReadyDeliverSm.setDataCoding(SmppConstants.DATA_CODING_LATIN1);
         } catch (SmppInvalidArgumentException e) {
             logger.error("Smth wrong while setting short message for deliver_sm", e);

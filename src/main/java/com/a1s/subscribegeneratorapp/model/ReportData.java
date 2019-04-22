@@ -18,6 +18,14 @@ public class ReportData {
 
     }
 
+    public ReportData(int id, SubscribeRequestData subscribeRequestData, String errorMessage) {
+        this.id = id;
+        this.errorMessage = errorMessage;
+        this.actualResponse = null;
+        this.subscribeRequestData = subscribeRequestData;
+
+    }
+
     public ReportData(int id, String errorMessage) {
         this.id = id;
         this.errorMessage = errorMessage;

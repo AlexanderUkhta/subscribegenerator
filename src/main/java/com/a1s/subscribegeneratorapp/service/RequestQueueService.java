@@ -53,13 +53,13 @@ public class RequestQueueService {
 
         try {
             logger.info("Deliver_sm with transaction_id = " + transactionId + " is waiting for msisdn...");
-            ultimateWhile(this::hasNoFreeMsisdn, 20);
+            ultimateWhile(this::hasNoFreeMsisdn, 40);
 
         } catch (TimeoutException e) {
             logger.error("All msisdns are busy for too long, got current request failed. The next request " +
                     "will be processed", e);
             transactionReportService.processOneFailureReport(transactionId, ALL_MSISDN_BUSY_FOR_TOO_LONG);
-
+            return;
         }
 
         String currentFreeMsisdn = getNextFreeMsisdn();
@@ -142,22 +142,13 @@ public class RequestQueueService {
 
     }
 
-//    public void setNoDeliveryReceiptForMsisdn(final String msisdn) {
-//        MsisdnStateData data = msisdnProcessMap.get(msisdn);
-//        data.setNoDeliveryReceiptNeeded();
-//        msisdnProcessMap.put(msisdn, data);
-//
-//    }
-
     /**
      * Method is invoked, when MsisdnTimeoutTask reports timeout on given msisdn.
      * In this case, error report is processed and msisdn become NOT_BUSY.
      * @param msisdn msisdn that caught timeout
      */
     public void processMsisdnTimeoutCase(final String msisdn) {
-        transactionReportService.processOneFailureReport(getTransactionIdByMsisdn(msisdn),
-                GOT_MSISDN_TIMEOUT_EXCEPTION + msisdn);
-        makeMsisdnNotBusy(msisdn);
+        transactionReportService.processMsisdnTimeoutReport(msisdn);
 
     }
 
@@ -187,7 +178,7 @@ public class RequestQueueService {
      * @param msisdn current msisdn
      * @return transactionId
      */
-    public int getTransactionIdByMsisdn(final String msisdn) {
+    int getTransactionIdByMsisdn(final String msisdn) {
         return msisdnProcessMap.get(msisdn).getCurrentTransactionId();
 
     }

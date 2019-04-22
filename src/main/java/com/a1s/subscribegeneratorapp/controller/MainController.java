@@ -42,7 +42,7 @@ public class MainController {
         contextProcessorService.setSubscribeRequestMap(excelReadService.findAll());
         long[] resultsInfo = contextProcessorService.process();
 
-        model.addAttribute("message", "Got SMPP templates processing");
+        model.addAttribute("message", "Got SMPP templates processed!");
         model.addAttribute("processedSuccessfully", resultsInfo[0]);
         model.addAttribute("processedWithError", resultsInfo[1]);
 

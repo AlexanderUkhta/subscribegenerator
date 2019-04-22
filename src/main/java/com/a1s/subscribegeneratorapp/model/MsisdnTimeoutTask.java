@@ -2,6 +2,7 @@ package com.a1s.subscribegeneratorapp.model;
 
 import static com.a1s.ConfigurationConstantsAndMethods.*;
 
+import com.a1s.subscribegeneratorapp.service.ContextProcessorService;
 import com.a1s.subscribegeneratorapp.service.RequestQueueService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

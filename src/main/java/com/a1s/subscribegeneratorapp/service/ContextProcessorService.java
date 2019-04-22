@@ -61,9 +61,13 @@ public class ContextProcessorService {
 //        } catch (TimeoutException e) {
 //            logger.error("Not all notifications returned after 90 secs waiting");
 //        }
-
+        try {
+            Thread.sleep(30000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         logger.info("All requests have been formed from requestData Map, going to make full report, " +
-                "when all responses would be received");
+                "when all responses would be received.");
         try {
             ultimateWhile(requestQueueService::stillHasBusyMsisdns, 90);
         } catch (TimeoutException e) {
@@ -75,17 +79,12 @@ public class ContextProcessorService {
         stopMsisdnTimeoutService.set(1);
 
         logger.info("Start creating data report...");
-        transactionReportService.makeFullDataReport();
+        transactionReportService.startMakingFullDataReport();
 
         long[] infoAboutResults = new long[2];
         infoAboutResults[0] = transactionReportService.getSuccessfulTransactionsQuantity();
         infoAboutResults[1] = transactionReportService.getFailedTransactionsQuantity();
 
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         smscProcessorService.stopSmsc();
 
         return infoAboutResults;

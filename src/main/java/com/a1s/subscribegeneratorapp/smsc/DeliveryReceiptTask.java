@@ -1,6 +1,5 @@
 package com.a1s.subscribegeneratorapp.smsc;
 
-import com.a1s.subscribegeneratorapp.service.RequestQueueService;
 import com.cloudhopper.commons.charset.CharsetUtil;
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.SmppSession;

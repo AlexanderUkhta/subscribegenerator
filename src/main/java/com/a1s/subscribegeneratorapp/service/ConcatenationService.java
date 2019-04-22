@@ -54,14 +54,14 @@ public class ConcatenationService {
 
             byte[] finalMessage = concatenateUdhOrSar(messageParts.get(messageFullId));
             messageParts.asMap().remove(messageFullId);
-            transactionReportService.processOneInfoReport(finalMessage, msisdn);
+            transactionReportService.processOneInfoReport(finalMessage, msisdn, submitSm.getDataCoding());
         }
 
     }
 
     /**
      * Processes submit_sm, if it has the sar optional parameters.
-     * Processed request is than put in the pool of message parts. If all parts for current msisdn are received,
+     * Processed request is then put in the pool of message parts. If all parts for current msisdn are received,
      * they are then concatenated and are put to the report map. In this case, msisdn becomes NOT_BUSY.
      * @param submitSm received submit_sm request
      */
@@ -94,7 +94,7 @@ public class ConcatenationService {
 
             byte[] finalMessage = concatenateUdhOrSar(messageParts.get(messageFullId));
             messageParts.asMap().remove(messageFullId);
-            transactionReportService.processOneInfoReport(finalMessage, msisdn);
+            transactionReportService.processOneInfoReport(finalMessage, msisdn, submitSm.getDataCoding());
         }
 
     }
@@ -109,7 +109,7 @@ public class ConcatenationService {
 
         Tlv messagePayload = submitSm.getOptionalParameter(SmppConstants.TAG_MESSAGE_PAYLOAD);
         byte[] shortMessage = messagePayload.getValue();
-        transactionReportService.processOneInfoReport(shortMessage, destAddress);
+        transactionReportService.processOneInfoReport(shortMessage, destAddress, submitSm.getDataCoding());
 
         logger.info("Have processed PAYLOAD for msisdn = " + destAddress + ".");
 
@@ -123,7 +123,7 @@ public class ConcatenationService {
     public void processSimpleMessage(final SubmitSm submitSm) {
         String destAddress = submitSm.getDestAddress().getAddress();
         byte[] shortMessage = submitSm.getShortMessage();
-        transactionReportService.processOneInfoReport(shortMessage, destAddress);
+        transactionReportService.processOneInfoReport(shortMessage, destAddress, submitSm.getDataCoding());
 
         logger.info("Have processed simple message for msisdn = " + destAddress + ".");
 
