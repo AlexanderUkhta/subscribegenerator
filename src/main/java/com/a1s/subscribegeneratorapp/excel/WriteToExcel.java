@@ -156,13 +156,13 @@ public class WriteToExcel {
                     cell.setCellValue(reportData.getActualResponse());
                     XSSFCell expectedCell = row.getCell(cellId - 1);
 
-                    if (actualResponse.contains(expectedResult)) {
+                    if (actualResponse.equals(expectedResult)) {
                         cell.setCellStyle(cellStyle.greenBorderCell(book));
                         expectedCell.setCellStyle(cellStyle.greenBorderCell(book));
                         logger.info("Results MATCH!");
                     } else {
                         cell.setCellStyle(cellStyle.redBorderCell(book));
-                        expectedCell.setCellStyle(cellStyle.redBorderCell(book));
+//                        expectedCell.setCellStyle(cellStyle.redBorderCell(book)); see row in ERROR_DATA case
                         logger.info("Results DO NOT MATCH!");
                         return 1;
 
@@ -178,6 +178,9 @@ public class WriteToExcel {
                 if (errorMessage != null) {
                     cell.setCellValue(reportData.getErrorMessage());
                     cell.setCellStyle(cellStyle.redBorderCell(book));
+
+                    XSSFCell expectedCell = row.getCell(cellId - 2);
+                    expectedCell.setCellStyle(cellStyle.redBorderCell(book));
                 }
                 break;
             default:

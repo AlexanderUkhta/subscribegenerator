@@ -55,14 +55,8 @@ public class ContextProcessorService {
         requests.forEach((id, requestInfo) ->
                 smscProcessorService.makeRequestFromDataAndSend(requestInfo));
 
-//        try {
-//            ultimateWhile(() -> (transactionReportService.getReportDataMapSize() ==
-//                    ConfigurationConstantsAndMethods.rowQuantityInExcel.get()), 90);
-//        } catch (TimeoutException e) {
-//            logger.error("Not all notifications returned after 90 secs waiting");
-//        }
         try {
-            Thread.sleep(30000);
+            Thread.sleep(20000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
