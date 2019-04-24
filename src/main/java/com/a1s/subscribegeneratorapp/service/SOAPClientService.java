@@ -24,7 +24,6 @@ public class SOAPClientService {
     private final String wsdlUrl = "http://portal-subscribe.a1s/ws/";
 
     private final String namespaceUri =  "urn:http://service.a1s/PortalSubscribe";
-    private final String operationQNameLocalPart = "UnsubscribeAllRequestEl";
     private final String operationQNamePrefix = "ns1";
 
     private final String msisdnQNameLocalPart = "msisdn";
@@ -35,6 +34,7 @@ public class SOAPClientService {
         try {
             SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
             SOAPConnection connection = soapConnectionFactory.createConnection();
+            String operationQNameLocalPart = "UnsubscribeAllRequestEl";
 
             MessageFactory factory = MessageFactory.newInstance();
             SOAPMessage message = factory.createMessage();
@@ -81,6 +81,59 @@ public class SOAPClientService {
             requestQueueService.makeMsisdnNotBusy(currentMsisdn);
 
         }
+    }
+
+    String checkSubscriptionsForMsisdn(String currentMsisdn) {
+        try {
+            SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
+            SOAPConnection connection = soapConnectionFactory.createConnection();
+            String operationQNameLocalPart = "GetAbonentActiveSubscriptionsRequestEl";
+
+            MessageFactory factory = MessageFactory.newInstance();
+            SOAPMessage message = factory.createMessage();
+            SOAPHeader header = message.getSOAPHeader();
+            SOAPBody body = message.getSOAPBody();
+            header.detachNode();
+
+            QName bodyName = new QName(namespaceUri,
+                    operationQNameLocalPart, operationQNamePrefix);
+            SOAPBodyElement bodyElement = body.addBodyElement(bodyName);
+
+            QName msisdn = new QName(msisdnQNameLocalPart);
+            SOAPElement symbol1 = bodyElement.addChildElement(msisdn);
+            symbol1.addTextNode(currentMsisdn);
+
+            message.saveChanges();
+
+            URL endpoint = new URL(wsdlUrl);
+
+            ByteArrayOutputStream outputStream1 = new ByteArrayOutputStream();
+            message.writeTo(outputStream1);
+            logger.info("Sending SOAP 'UnsubscribeAll' request: \n" + outputStream1.toString());
+            SOAPMessage response = connection.call(message, endpoint);
+
+            ByteArrayOutputStream outputStream2 = new ByteArrayOutputStream();
+            response.writeTo(outputStream2);
+            logger.info("Getting SOAP 'UnsubscribeAll' response: \n" + outputStream2.toString());
+
+            outputStream1.close();
+            outputStream2.close();
+            connection.close();
+
+            return outputStream2.toString();
+
+        } catch (SOAPException e) {
+            logger.error("Got SOAP Exception while making SOAP request, going to continue processing " +
+                    "next request", e);
+            requestQueueService.makeMsisdnNotBusy(currentMsisdn);
+
+        } catch (IOException e1) {
+            logger.error("Got IO Exception while making SOAP request, going to continue processing next request", e1);
+            requestQueueService.makeMsisdnNotBusy(currentMsisdn);
+
+        }
+
+        return null;
     }
 
 }

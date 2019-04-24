@@ -29,6 +29,8 @@ public class TransactionReportService {
     private ContextProcessorService contextProcessorService;
     @Autowired
     private ExcelCreateService excelCreateService;
+    @Autowired
+    private SOAPClientService soapClientService;
 
     private Map<Integer, ReportData> reportDataMap = new ConcurrentHashMap<>();
 
@@ -45,7 +47,17 @@ public class TransactionReportService {
 
         logger.info("Putting in Map one NORMAL report for operation with id = " + transactionId + ", msisdn = " + msisdn);
         reportDataMap.put(transactionId, new ReportData(transactionId, actualResponse, requestThatMatchesCurrentResponse));
+        try {
+            logger.info("Waiting 3 secs to make SOAP 'GetAbonentSubscriptions' request for msisdn:" + msisdn);
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            logger.error("An error occurred while making a SOAP request for msisdn:" + msisdn, e);
+        }
 
+        String soapResponse = soapClientService.checkSubscriptionsForMsisdn(msisdn);
+        String actualPsIdName = ((Integer) requestThatMatchesCurrentResponse.getPsId()).toString();
+
+        assert soapResponse.contains(actualPsIdName); //todo!!
         requestQueueService.makeMsisdnNotBusy(msisdn);
 
     }
