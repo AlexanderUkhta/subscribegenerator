@@ -24,7 +24,7 @@ public class MsisdnTimeoutTask implements Runnable{
     @Autowired
     private RequestQueueService requestQueueService;
 
-    private int timeoutSecs = 30;
+    private int timeoutSecs = 60;
 
     @Override
     public void run() {

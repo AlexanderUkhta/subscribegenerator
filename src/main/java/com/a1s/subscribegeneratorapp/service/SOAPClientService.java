@@ -22,7 +22,6 @@ public class SOAPClientService {
     private RequestQueueService requestQueueService;
 
     private final String wsdlUrl = "http://portal-subscribe.a1s/ws/";
-
     private final String namespaceUri =  "urn:http://service.a1s/PortalSubscribe";
     private final String operationQNamePrefix = "ns1";
 

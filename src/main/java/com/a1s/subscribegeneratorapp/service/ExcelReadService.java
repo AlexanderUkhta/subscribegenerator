@@ -37,7 +37,6 @@ public class ExcelReadService {
                 getLastRowId(readFromExcel.getSheet("Подключение")));
 
         for(int i = 1; i <= ConfigurationConstantsAndMethods.rowQuantityInExcel.get(); i++) {
-//        for(int i = 1; i <= ; i++) {
             int psid = Integer.parseInt(readFromExcel.getCellValue(i, readFromExcel.getCellId("ps id",
                     readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение")));
 
@@ -64,7 +63,7 @@ public class ExcelReadService {
 
                 } else {
                     requestDataMap.put(i, new SubscribeRequestData(i, psid, subscriptionName, shortNum, textRequest, welcomeNotification));
-                    logger.info("Successfully processed row " + (i + 1) + "(request number " + i);
+                    logger.info("Successfully processed row " + (i + 1) + " (request number " + i + ")");
                 }
             }
 

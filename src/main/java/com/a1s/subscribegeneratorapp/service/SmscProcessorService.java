@@ -63,7 +63,6 @@ public class SmscProcessorService {
         logger.info("Creating " + dataForRequest.getId() + "th deliver_sm, yet without msisdn...");
 
         try {
-            currentReadyDeliverSm.setSequenceNumber(dataForRequest.getId());
             currentReadyDeliverSm.setDestAddress(destinationAddress);
             currentReadyDeliverSm.setShortMessage(CharsetUtil.encode(dataForRequest.getRequestText(),
                     CharsetUtil.CHARSET_UTF_8));

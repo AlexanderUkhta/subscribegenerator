@@ -49,15 +49,17 @@ public class TransactionReportService {
         reportDataMap.put(transactionId, new ReportData(transactionId, actualResponse, requestThatMatchesCurrentResponse));
         try {
             logger.info("Waiting 3 secs to make SOAP 'GetAbonentSubscriptions' request for msisdn:" + msisdn);
-            Thread.sleep(3000);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             logger.error("An error occurred while making a SOAP request for msisdn:" + msisdn, e);
         }
 
         String soapResponse = soapClientService.checkSubscriptionsForMsisdn(msisdn);
-        String actualPsIdName = ((Integer) requestThatMatchesCurrentResponse.getPsId()).toString();
+        String expectedPsIdName = ((Integer) requestThatMatchesCurrentResponse.getPsId()).toString();
 
-        assert soapResponse.contains(actualPsIdName); //todo!!
+        if (soapResponse.contains(expectedPsIdName))
+            logger.info("Abonent " + msisdn + " has been subscribed on the required " + expectedPsIdName + "!");
+
         requestQueueService.makeMsisdnNotBusy(msisdn);
 
     }

@@ -53,7 +53,7 @@ public class RequestQueueService {
 
         try {
             logger.info("Deliver_sm with transaction_id = " + transactionId + " is waiting for msisdn...");
-            ultimateWhile(this::hasNoFreeMsisdn, 40);
+            ultimateWhile(this::hasNoFreeMsisdn, 70);
 
         } catch (TimeoutException e) {
             logger.error("All msisdns are busy for too long, got current request failed. The next request " +
@@ -64,6 +64,7 @@ public class RequestQueueService {
 
         String currentFreeMsisdn = getNextFreeMsisdn();
         deliverSm.setSourceAddress(new Address((byte) 1, (byte) 1, currentFreeMsisdn));
+        deliverSm.setSequenceNumber(transactionId);
 
         soapClientService.unsubscribeAllForMsisdn(currentFreeMsisdn);
         logger.info("Current deliver_sm text: " + new String(deliverSm.getShortMessage()));
