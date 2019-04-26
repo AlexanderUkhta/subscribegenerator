@@ -5,6 +5,9 @@ import com.a1s.subscribegeneratorapp.model.SubscribeRequestData;
 import com.a1s.subscribegeneratorapp.service.ExcelCreateService;
 import com.a1s.subscribegeneratorapp.service.ExcelReadService;
 import com.a1s.subscribegeneratorapp.service.ContextProcessorService;
+import com.a1s.subscribegeneratorapp.service.RequestQueueService;
+import com.cloudhopper.smpp.pdu.DeliverSm;
+import com.cloudhopper.smpp.type.Address;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Controller;
@@ -75,5 +78,14 @@ public class MainController {
 
         model.addAttribute("message", processedAtAll);
         return "test";
+    }
+
+    @RequestMapping(value = "/checkUssd", method = RequestMethod.GET)
+    public String runUssdTransaction(ModelMap model) {
+        String msisdn = "79532467581";
+
+        contextProcessorService.startUssdTest();
+
+        return "done";
     }
 }

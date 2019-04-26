@@ -36,7 +36,8 @@ public class ExcelReadService {
         ConfigurationConstantsAndMethods.rowQuantityInExcel.set(readFromExcel.
                 getLastRowId(readFromExcel.getSheet("Подключение")));
 
-        for(int i = 1; i <= ConfigurationConstantsAndMethods.rowQuantityInExcel.get(); i++) {
+//        for(int i = 1; i <= ConfigurationConstantsAndMethods.rowQuantityInExcel.get(); i++) {
+        for (int i = 1; i < 2; i ++) {
             int psid = Integer.parseInt(readFromExcel.getCellValue(i, readFromExcel.getCellId("ps id",
                     readFromExcel.getSheet("Подключение")), readFromExcel.getSheet("Подключение")));
 

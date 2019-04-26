@@ -13,6 +13,8 @@ public class ConfigurationConstantsAndMethods {
     public static final Integer RECEIPT_NEEDED = 0;
     public static final Integer RECEIPT_NOT_NEEDED = 0;
 
+    public static final String USSD_SERVICE_TYPE = "USSD";
+
     public static AtomicInteger stopMsisdnTimeoutService = new AtomicInteger(0);
     public static AtomicInteger rowQuantityInExcel = new AtomicInteger(0);
 

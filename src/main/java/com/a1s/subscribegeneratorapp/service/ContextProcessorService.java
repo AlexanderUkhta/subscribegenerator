@@ -1,7 +1,13 @@
 package com.a1s.subscribegeneratorapp.service;
 
+import com.a1s.subscribegeneratorapp.model.MsisdnStateData;
 import com.a1s.subscribegeneratorapp.model.MsisdnTimeoutTask;
 import com.a1s.subscribegeneratorapp.model.SubscribeRequestData;
+import com.a1s.subscribegeneratorapp.smsc.CustomSmppServer;
+import com.cloudhopper.commons.charset.CharsetUtil;
+import com.cloudhopper.smpp.impl.DefaultSmppSession;
+import com.cloudhopper.smpp.pdu.DeliverSm;
+import com.cloudhopper.smpp.type.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +17,12 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static com.a1s.ConfigurationConstantsAndMethods.stopMsisdnTimeoutService;
-import static com.a1s.ConfigurationConstantsAndMethods.ultimateWhile;
+import static com.a1s.ConfigurationConstantsAndMethods.*;
+import static com.a1s.ConfigurationConstantsAndMethods.GOT_INTERRUPTED_EXCEPTION;
+import static com.a1s.ConfigurationConstantsAndMethods.GOT_SMPP_CHANNEL_EXCEPTION;
 
 /**
  * Service, that starts the main components of application, implements full process of generating requests from
@@ -92,6 +100,66 @@ public class ContextProcessorService {
 
     SubscribeRequestData findRequestDataById(final int transactionId) {
         return requests.get(transactionId);
+
+    }
+
+    public void startUssdTest() {
+        logger.info("Got context map full, going to start SMSC...");
+        CountDownLatch bindCompleted = new CountDownLatch(1);
+        smscProcessorService.startSmsc(bindCompleted);
+
+        DefaultSmppSession smppSession = (DefaultSmppSession) CustomSmppServer.getServerSession(SYSTEM_ID);
+        sendRequest(smppSession);
+
+        try {
+            Thread.sleep(20000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        smscProcessorService.stopSmsc();
+    }
+
+    private void sendRequest(DefaultSmppSession smppSession) {
+        String msisdn = "79532467581";
+        String shortNum = "101030";
+        int transactionId = 11112222;
+        String shortMessage = shortNum + "&";
+
+        DeliverSm deliverSm = new DeliverSm();
+        deliverSm.setDestAddress(new Address((byte) 1, (byte) 1, shortNum));
+        deliverSm.setSourceAddress(new Address((byte) 1, (byte) 1, msisdn));
+        deliverSm.setSequenceNumber(transactionId);
+        try {
+            deliverSm.setShortMessage(CharsetUtil.encode(shortMessage, CharsetUtil.CHARSET_UTF_8));
+        } catch (SmppInvalidArgumentException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            smppSession.sendRequestPdu(deliverSm, TimeUnit.SECONDS.toMillis(60), false);
+            logger.info(transactionId + "th deliver_sm request is sent from " + msisdn);
+
+        } catch (RecoverablePduException e1) {
+            logger.error("Got recoverable pdu exception while sending request", e1);
+            transactionReportService.processOneFailureReport(transactionId, GOT_RCVRBL_PDU_EXCEPTION);
+
+        } catch (UnrecoverablePduException e2) {
+            logger.error("Got unrecoverable pdu exception while sending request", e2);
+            transactionReportService.processOneFailureReport(transactionId, GOT_UNRCVRBL_PDU_EXCEPTION);
+
+        } catch (SmppTimeoutException e3) {
+            logger.error("Got smpp timeout exception while sending request", e3);
+            transactionReportService.processOneFailureReport(transactionId, GOT_SMPP_TIMEOUT_EXCEPTION);
+
+        } catch (SmppChannelException e4) {
+            logger.error("Got smpp channel exception while sending request", e4);
+            transactionReportService.processOneFailureReport(transactionId, GOT_SMPP_CHANNEL_EXCEPTION);
+
+        } catch (InterruptedException e5) {
+            logger.error("Got interrupted exception while sending request", e5);
+            transactionReportService.processOneFailureReport(transactionId, GOT_INTERRUPTED_EXCEPTION);
+        }
 
     }
 }
